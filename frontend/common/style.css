@@ -1,0 +1,22 @@
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+pre {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+button {
+    padding: 3px 5px;
+    margin: 5px 0px;
+}
+
+.resbox {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 3px solid rgba(0, 0, 0, 0.5);
+    
+    overflow: auto;
+    max-height: 350px;
+    width: 700px;
+    margin: 10px 0px;
+}
