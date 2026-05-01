@@ -25,6 +25,8 @@ app.use('/assets', express.static(path.join(__dirname, '../frontend/assets')));
 app.get('/teacher/quizzes', (req, res) => {
     // Aquí simulas el JSON que definimos en el contrato
     const mockData = {
+        appName: "Testotron",        
+        pageTitle: "Profesor",
         user: { 
             name: "Profesor Carlos Mendoza", 
             role: "teacher", 
@@ -40,5 +42,54 @@ app.get('/teacher/quizzes', (req, res) => {
     res.render('teacher/quizzes', mockData);
 });
 
+app.get('/auth/login', (req, res) => {
+    // Datos basados estrictamente en el Contrato JSON definido
+    const mockData = {
+        appName: "Testotron",
+        pageTitle: "Iniciar sesión",
+        appSlogan: "Gestiona cuestionarios de forma rápida, clara y organizada",
+        authAction: "/auth/login",
+        registerUrl: "/auth/register",
+        quickAccessAction: "/quizzes/join",
+        placeholders: {
+            email: "tu@email.com",
+            password: "********",
+            quizCode: "Ingresa el código del cuestionario"
+        },
+        // Forzamos el uso del layout de autenticación
+        layout: 'auth' 
+    };
+
+    res.render('shared/login', mockData);
+});
+
+app.get('/auth/register', (req, res) => {
+    const mockData = {
+        pageTitle: "Crear cuenta",
+        appName: "Testotron",
+        appSlogan: "Gestiona cuestionarios de forma rápida, clara y organizada",
+        authAction: "/auth/register",
+        loginUrl: "/auth/login",
+        quickAccessAction: "/quizzes/join",
+        roles: [
+            { "value": "student", "label": "Estudiante" },
+            { "value": "teacher", "label": "Profesor" }
+        ],
+        placeholders: {
+            name: "Jaime Hernández",
+            email: "tu@email.com",
+            password: "********",
+            quizCode: "Ingresa el código del cuestionario"
+        },
+        layout: "auth"
+    };
+
+    res.render('shared/register', mockData);
+})
+
+app.get('/', (req, res) => {
+    res.redirect('/auth/login');
+})
+
 const PORT = 3000;
-app.listen(PORT, () => console.log(`Testotron corriendo en http://localhost:${PORT}/teacher/quizzes`));
+app.listen(PORT, () => console.log(`Testotron corriendo en http://localhost:${PORT}`));

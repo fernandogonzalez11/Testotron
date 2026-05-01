@@ -1,0 +1,11 @@
+<section class="card shadow-sm border-0 p-3" aria-labelledby="quick-access-title">
+    <p id="quick-access-title" class="small mb-2 text-sentence fw-medium">Acceso rápido con código:</p>
+    <form action="{{quickAccessAction}}" method="GET" class="d-flex gap-2">
+        <label for="quiz-code" class="visually-hidden text-sentence">Ingresa el código del cuestionario</label>
+        <input type="text" id="quiz-code" name="code" class="form-control form-control-sm" 
+               placeholder="{{placeholders.quizCode}}" required>
+        <button type="submit" class="btn btn-success btn-sm px-4 text-sentence" aria-label="Acceder al cuestionario con código">
+            Acceder
+        </button>
+    </form>
+</section>
