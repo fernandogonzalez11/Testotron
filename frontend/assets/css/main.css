@@ -1,0 +1,81 @@
+/* frontend/assets/css/main.css */
+
+:root {
+    /* Paleta de Colores Oficial */
+    --bg-main: #FFFFFF;
+    --color-primary: #2B7FFF;   /* Azul: Botones principales, Links */
+    --color-success: #00C950;   /* Verde: Confirmaciones, Botones de creación */
+    --color-accent: #AD46FF;    /* Morado: Elementos especiales, iconos */
+    
+    /* Variaciones para estados (Hover) */
+    --color-primary-dark: #1e66cc;
+    --color-success-dark: #00a843;
+    
+    /* Tipografía y Espaciado */
+    --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --border-radius-lg: 0.75rem;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Configuración Base */
+body {
+    background-color: var(--bg-main);
+    font-family: var(--font-main);
+    color: #333; /* Texto base oscuro para contraste */
+}
+
+.btn-primary {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark) !important;
+}
+
+.btn-success {
+    background-color: var(--color-success) !important;
+    border-color: var(--color-success) !important;
+}
+
+.btn-success:hover {
+    background-color: var(--color-success-dark) !important;
+}
+
+.text-primary { color: var(--color-primary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-accent  { color: var(--color-accent) !important; }
+
+/* Regla de capitalización: Solo primera letra mayúscula */
+/* 
+h1, h2, h3, h4, h5, h6, p, label, span, button {
+    text-transform: lowercase;
+}
+
+h1::first-letter, h2::first-letter, h3::first-letter, 
+p::first-letter, label::first-letter, button::first-letter,
+span::first-letter {
+    text-transform: uppercase;
+} 
+*/
+
+
+/* Asegura que el sidebar ocupe el alto disponible para empujar el contenido al fondo */
+.sidebar-wrapper nav {
+    min-height: calc(100vh - 70px); /* Ajusta según el alto de tu navbar */
+}
+
+/* Colores de badges basados en tu paleta */
+.bg-success-subtle { background-color: #e6f9ed !important; }
+.bg-primary-subtle { background-color: #eaefff !important; }
+
+/* Estilo para los links del sidebar al pasar el mouse */
+.nav-link.link-dark:hover {
+    background-color: #f8f9fa;
+    color: var(--color-primary) !important;
+}
+
+.nav-link.link-danger:hover {
+    background-color: #fff5f5;
+    color: #dc3545 !important;
+}

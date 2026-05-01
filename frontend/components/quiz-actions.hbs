@@ -1,0 +1,17 @@
+<div class="d-flex justify-content-end gap-1" role="group" aria-label="Acciones para el cuestionario: {{this.title}}">
+    <a href="/teacher/quizzes/edit/{{this.id}}" class="btn btn-sm btn-outline-primary" aria-label="Editar {{this.title}}">
+        <i class="bi bi-pencil" aria-hidden="true"></i>
+    </a>
+    <a href="/teacher/quizzes/view/{{this.id}}" class="btn btn-sm btn-outline-secondary" aria-label="Ver {{this.title}}">
+        <i class="bi bi-eye" aria-hidden="true"></i>
+    </a>
+    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Duplicar {{this.title}}" data-id="{{this.id}}">
+        <i class="bi bi-files" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Compartir {{this.title}}" data-id="{{this.id}}">
+        <i class="bi bi-share" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Borrar {{this.title}}" data-id="{{this.id}}">
+        <i class="bi bi-trash" aria-hidden="true"></i>
+    </button>
+</div>

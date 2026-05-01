@@ -1,0 +1,42 @@
+{
+  "user": { "name": "Profesor Carlos Mendoza", "role": "teacher", "initials": "CM" },
+  "activePage": { "quizzes": true },
+  "stats": {
+    "total": 6,
+    "active": 3,
+    "drafts": 2,
+    "totalResponses": 138
+  },
+  "quizzes": [
+    {
+      "id": "mat2024",
+      "title": "Matemáticas Avanzadas - Unidad 3",
+      "createdAt": "2026-03-15",
+      "group": "Ingeniería 2024",
+      "questions": 15,
+      "responses": 28,
+      "status": "active",
+      "code": "MAT-2024"
+    },
+    {
+      "id": "his7832",
+      "title": "Historia Universal Contemporánea",
+      "createdAt": "2026-03-18",
+      "group": "Humanidades A",
+      "questions": 20,
+      "responses": 34,
+      "status": "active",
+      "code": "HIS-7832"
+    },
+    {
+      "id": "react4521",
+      "title": "Programación Web - React",
+      "createdAt": "2026-03-20",
+      "group": "Desarrollo Web",
+      "questions": 25,
+      "responses": 19,
+      "status": "draft",
+      "code": "WEB-4521"
+    }
+  ]
+}

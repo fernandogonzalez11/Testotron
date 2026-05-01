@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testotron - Gestión de Cuestionarios</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="icon" type="image/x-icon" href="/assets/img/logo.png">
+    
+    <!-- CSS Core con Paleta de Colores -->
+    <link rel="stylesheet" href="/assets/css/main.css">
+
+    <!-- Secciones opcionales para CSS específico -->
+    {{{_sections.head}}}
+</head>
+<body class="bg-light">
+
+    <!-- Enlace de salto para accesibilidad (Skip to content) -->
+    <a href="#main-content" class="visually-hidden-focusable">Saltar al contenido principal</a>
+
+    <div class="d-flex flex-column min-vh-100">
+        
+        <!-- Navbar Superior (Accesibilidad: role="banner") -->
+        <header role="banner">
+            {{> navbar}}
+        </header>
+
+        <div class="d-flex flex-grow-1">
+            <!-- Sidebar Izquierdo (Accesibilidad: role="navigation") -->
+            <aside class="sidebar-wrapper bg-white border-end" role="navigation" aria-label="Menú principal">
+                {{> sidebar}}
+            </aside>
+
+            <!-- Contenedor de Contenido Principal -->
+            <div class="d-flex flex-column w-100">
+                <main id="main-content" class="container-fluid p-4" role="main">
+                    {{!-- Inyección de la vista específica --}}
+                    {{{body}}}
+                </main>
+
+                <!-- Footer (Accesibilidad: role="contentinfo") -->
+                <footer class="mt-auto py-3 border-top bg-white" role="contentinfo">
+                    <div class="container-fluid text-center text-muted small">
+                        {{> footer}}
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/main.js"></script>
+    {{{_sections.scripts}}}
+</body>
+</html>

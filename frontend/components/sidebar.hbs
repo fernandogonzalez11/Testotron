@@ -1,0 +1,87 @@
+<nav class="d-flex flex-column flex-shrink-0 p-3 bg-white h-100" style="width: 280px;">
+    <ul class="nav nav-pills flex-column mb-auto">
+        
+        {{!-- Menú para PROFESOR --}}
+        {{#if (eq user.role 'teacher')}}
+            <li class="nav-item">
+                <a href="/teacher/dashboard" class="nav-link {{#if activePage.dashboard}}active{{else}}link-dark{{/if}}" aria-current="{{#if activePage.dashboard}}page{{/if}}">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="/teacher/quizzes" class="nav-link {{#if activePage.quizzes}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-journal-text me-2"></i> Cuestionarios
+                </a>
+            </li>
+            <li>
+                <a href="/teacher/results" class="nav-link {{#if activePage.results}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-bar-chart me-2"></i> Resultados
+                </a>
+            </li>
+            <li>
+                <a href="/teacher/groups" class="nav-link {{#if activePage.groups}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-people me-2"></i> Grupos
+                </a>
+            </li>
+        {{/if}}
+
+        {{!-- Menú para ESTUDIANTE --}}
+        {{#if (eq user.role 'student')}}
+            <li class="nav-item">
+                <a href="/student/dashboard" class="nav-link {{#if activePage.dashboard}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-house-door me-2"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="/student/my-quizzes" class="nav-link {{#if activePage.myQuizzes}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-pencil-square me-2"></i> Mis cuestionarios
+                </a>
+            </li>
+            <li>
+                <a href="/student/results" class="nav-link {{#if activePage.results}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-trophy me-2"></i> Resultados
+                </a>
+            </li>
+            <li>
+                <a href="/student/groups" class="nav-link {{#if activePage.groups}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-collection me-2"></i> Grupos
+                </a>
+            </li>
+        {{/if}}
+
+        {{!-- Menú para ADMIN --}}
+        {{#if (eq user.role 'admin')}}
+            <li class="nav-item">
+                <a href="/admin/management" class="nav-link {{#if activePage.management}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-shield-lock me-2"></i> Administración
+                </a>
+            </li>
+        {{/if}}
+
+        {{!-- Opción común: CONFIGURACIÓN --}}
+        <hr>
+        <li>
+            <a href="/settings" class="nav-link {{#if activePage.settings}}active{{else}}link-dark{{/if}}">
+                <i class="bi bi-gear me-2"></i> Configuración
+            </a>
+        </li>
+    </ul>
+
+    <!-- Separador y Acciones de Cuenta -->
+    <div class="mt-auto pt-3 border-top">
+        <ul class="nav nav-pills flex-column">
+            <li>
+                <a href="/profile" class="nav-link d-flex align-items-center {{#if activePage.profile}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-person-circle me-2"></i> Mi perfil
+                </a>
+            </li>
+            <li>
+                <form action="/logout" method="POST" class="d-inline">
+                    <button type="submit" class="nav-link link-danger d-flex align-items-center w-100 border-0 bg-transparent" aria-label="Cerrar sesión">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</nav>

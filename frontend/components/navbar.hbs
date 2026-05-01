@@ -1,0 +1,37 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-2" role="navigation" aria-label="Barra de usuario">
+    <div class="container-fluid">
+        <!-- Izquierda: Logo y Nombre -->
+        <div class="d-flex align-items-center">
+            <img src="/assets/img/logo.png" alt="Logo de Testotron" width="32" height="32" class="me-2">
+            <span class="h5 mb-0 fw-bold text-dark">Testotron</span>
+        </div>
+
+        <!-- Derecha: Info de Usuario -->
+        <div class="d-flex align-items-center ms-auto">
+            <div class="text-end me-3 d-none d-md-block">
+                <p class="mb-0 small text-muted">Bienvenido de nuevo</p>
+                <p class="mb-0 fw-bold text-capitalize">{{user.name}}</p>
+            </div>
+            
+            <!-- Badge de Rol (Color según tu paleta) -->
+            <span class="badge rounded-pill me-3 bg-success-subtle text-success border border-success">
+                {{#if (eq user.role 'admin')}}Admin{{/if}}
+                {{#if (eq user.role 'teacher')}}Profesor{{/if}}
+                {{#if (eq user.role 'student')}}Estudiante{{/if}}
+            </span>
+
+            <!-- Foto de Perfil Clickeable -->
+            <a href="/profile" aria-label="Ir a mi perfil" class="text-decoration-none">
+                {{#if user.profilePic}}
+                    <img src="{{user.profilePic}}" alt="Foto de {{user.name}}" class="rounded-circle border" width="40" height="40">
+                {{else}}
+                    <!-- Avatar con iniciales si no hay foto -->
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
+                         style="width: 40px; height: 40px;">
+                        {{user.initials}}
+                    </div>
+                {{/if}}
+            </a>
+        </div>
+    </div>
+</nav>
