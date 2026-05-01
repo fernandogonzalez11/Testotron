@@ -10,7 +10,7 @@
     <link rel="icon" type="image/x-icon" href="/assets/img/logo.png">
     <style>
         body { background-color: var(--bg-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .auth-container { max-width: 450px; width: 100%; padding: 2rem; }
+        .auth-container { max-width: 550px; width: 100%; padding: 2rem; }
         .text-sentence { text-transform: lowercase; }
         .text-sentence::first-letter { text-transform: uppercase; }
         .btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); }
@@ -20,6 +20,7 @@
 <body>
     <main class="auth-container" id="main-content">
         {{{body}}}
+        {{> quick-access}}
     </main>
 </body>
 </html>
