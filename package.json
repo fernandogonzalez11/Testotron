@@ -1,17 +1,21 @@
 {
-  "name": "zodding",
+  "name": "testotron-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend API for Testotron quiz platform",
+  "main": "api/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node api/server.js",
+    "api:init": "node api/server.js init"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.0",
+    "better-sqlite3": "^8.3.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-handlebars": "^8.0.3",
+    "jsonwebtoken": "^9.0.0",
     "zod": "^3.25.65"
   }
 }

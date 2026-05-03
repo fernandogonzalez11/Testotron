@@ -1,32 +1,48 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+const { initDB, createSchema } = require('./controllers/db');
 
-const { initDB, createSchema } = require("./controllers/db");
-const { UserController } = require("./controllers/user");
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const groupRoutes = require('./routes/groups');
+const testRoutes = require('./routes/tests');
+const sectionRoutes = require('./routes/sections');
+const itemRoutes = require('./routes/items');
+const templateRoutes = require('./routes/templates');
+const answerRoutes = require('./routes/answers');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-// only allow localhost:8080 to make requests to this API
-app.use(cors({ origin: "http://localhost:8080" }));
+app.use(cors({ origin: 'http://localhost:8080' }));
 
+// initialize DB
 initDB();
 
-// run `npm run api init` to create the schema
-if (process.argv[2] == "init")
-    createSchema();
+// run `node api/server.js init` to create schema
+if (process.argv[2] === 'init') {
+  createSchema();
+  console.log('Schema created');
+  process.exit(0);
+}
 
-app.get("/", (req, res) => {
-    res.send("hi");
-});
+// public routes
+app.use('/auth', authRoutes);
 
-// user calls
-app.post("/user", UserController.create);
-app.get("/user/:id", UserController.get);
-app.put("/user/:id", UserController.update);
-app.delete("/user/:id", UserController.delete);
+// protected/resource routes
+app.use('/users', userRoutes);
+app.use('/groups', groupRoutes);
+app.use('/tests', testRoutes);
+app.use('/sections', sectionRoutes);
+app.use('/items', itemRoutes);
+app.use('/templates', templateRoutes);
+app.use('/answers', answerRoutes);
+app.use('/dashboard', dashboardRoutes);
+
+app.get('/', (req, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, () => {
-    console.log(`API listening on http://localhost:${PORT}`);
+  console.log(`API listening on http://localhost:${PORT}`);
 });
