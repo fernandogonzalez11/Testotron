@@ -61,8 +61,18 @@ span::first-letter {
 
 
 /* Asegura que el sidebar ocupe el alto disponible para empujar el contenido al fondo */
-.sidebar-wrapper nav {
+.sidebar-wrapper {
     min-height: calc(100vh - 70px); /* Ajusta según el alto de tu navbar */
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
+}
+
+#main-content {
+    min-height: 0;
+}
+
+html, body {
+    min-height: 100%;
 }
 
 /* Colores de badges basados en tu paleta */

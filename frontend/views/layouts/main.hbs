@@ -35,14 +35,14 @@
             </aside>
 
             <!-- Contenedor de Contenido Principal -->
-            <div class="d-flex flex-column w-100">
-                <main id="main-content" class="container-fluid p-4" role="main">
+            <div class="d-flex flex-column w-100 min-vh-0">
+                <main id="main-content" class="container-fluid p-4 flex-grow-1 overflow-auto" role="main">
                     {{!-- Inyección de la vista específica --}}
                     {{{body}}}
                 </main>
 
                 <!-- Footer (Accesibilidad: role="contentinfo") -->
-                <footer class="mt-auto py-3 border-top bg-white" role="contentinfo">
+                <footer class="mt-auto py-1 border-top bg-white" role="contentinfo">
                     <div class="container-fluid text-center text-muted small">
                         {{> footer}}
                     </div>
