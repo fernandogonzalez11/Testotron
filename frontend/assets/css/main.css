@@ -15,6 +15,9 @@
     --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --border-radius-lg: 0.75rem;
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    
+    /* Sidebar Width - Percentage based, responsive to any screen */
+    --sidebar-width: 25%;
 }
 
 /* Configuración Base */
@@ -65,10 +68,12 @@ span::first-letter {
     min-height: calc(100vh - 70px); /* Ajusta según el alto de tu navbar */
     max-height: calc(100vh - 70px);
     overflow-y: auto;
+    width: var(--sidebar-width);
 }
 
 #main-content {
     min-height: 0;
+    padding-bottom: 70px; /* Espacio para el footer fijo */
 }
 
 html, body {
@@ -78,6 +83,15 @@ html, body {
 /* Colores de badges basados en tu paleta */
 .bg-success-subtle { background-color: #e6f9ed !important; }
 .bg-primary-subtle { background-color: #eaefff !important; }
+
+/* Footer adaptable - se posiciona después del sidebar */
+footer.footer-fixed {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    z-index: 10;
+}
 
 /* Estilo para los links del sidebar al pasar el mouse */
 .nav-link.link-dark:hover {

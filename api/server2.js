@@ -87,6 +87,25 @@ app.get('/auth/register', (req, res) => {
     res.render('shared/register', mockData);
 })
 
+app.get('/profile', (req, res) => {
+    const mockData = {
+        "pageTitle": "Profesor",
+        "page": {
+            "title": "Mi perfil",
+            "subtitle": "Gestiona tu información personal y configuración"
+        },
+        "user": {
+            "name": "Profesor Carlos Mendoza",
+            "initials": "CM",
+            "email": "carlos.mendoza@universidad.edu",
+            "role": "teacher",
+            "memberSince": "2026-01-10",
+            "bio": "Docente de matemáticas y física con más de 10 años de experiencia en educación superior."
+        }
+    };
+    res.render('shared/profile', mockData)
+});
+
 app.get('/', (req, res) => {
     res.redirect('/auth/login');
 })
