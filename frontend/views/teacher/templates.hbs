@@ -1,0 +1,27 @@
+<main
+  id="main-content"
+  class="container-fluid"
+  role="main"
+>
+  <header class="mb-4">
+    <h1 class="h3 fw-bold mb-1">
+      {{pageTitle}}
+    </h1>
+
+    <p class="text-muted mb-0">
+      {{pageDescription}}
+    </p>
+  </header>
+
+  <section
+    aria-label="Listado de plantillas"
+  >
+    <div class="row g-4">
+      {{#each templates}}
+        <div class="col-12 col-md-6 col-xl-4">
+          {{> template-card}}
+        </div>
+      {{/each}}
+    </div>
+  </section>
+</main>

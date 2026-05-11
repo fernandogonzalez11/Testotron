@@ -19,7 +19,11 @@
 <body class="bg-light">
 
     <!-- Enlace de salto para accesibilidad (Skip to content) -->
-    <a href="#main-content" class="visually-hidden-focusable">Saltar al contenido principal</a>
+    <a href="#main-content" 
+        class="visually-hidden-focusable position-absolute top-0 start-0 m-3 btn btn-light shadow-lg" 
+        style="z-index: 2000;">
+        Saltar al contenido principal
+    </a>
 
     <div class="d-flex flex-column min-vh-100">
         
@@ -28,22 +32,22 @@
             {{> navbar}}
         </header>
 
-        <div class="d-flex flex-grow-1">
-            <!-- Sidebar Izquierdo (Accesibilidad: role="navigation") -->
-            <aside class="sidebar-wrapper bg-white border-end" role="navigation" aria-label="Menú principal">
+        <div class="d-flex flex-grow-1" style="height: calc(100vh - 70px); overflow: hidden;">
+            <!-- Sidebar -->
+            <aside class="sidebar-wrapper bg-white border-end" role="navigation">
                 {{> sidebar}}
             </aside>
 
-            <!-- Contenedor de Contenido Principal -->
-            <div class="d-flex flex-column w-100">
-                <main id="main-content" class="container-fluid p-4" role="main">
-                    {{!-- Inyección de la vista específica --}}
+            <!-- Right Column: Main + Footer -->
+            <div class="d-flex flex-column flex-grow-1">
+                <!-- Main content scrolls independently -->
+                <main id="main-content" class="container-fluid p-4 flex-grow-1 overflow-auto" role="main">
                     {{{body}}}
                 </main>
 
-                <!-- Footer (Accesibilidad: role="contentinfo") -->
-                <footer class="mt-auto py-3 border-top bg-white" role="contentinfo">
-                    <div class="container-fluid text-center text-muted small">
+                <!-- Footer stays at the bottom of this flex column -->
+                <footer class="py-2 border-top bg-white" role="contentinfo">
+                    <div class="text-center text-muted small px-4">
                         {{> footer}}
                     </div>
                 </footer>
