@@ -1,0 +1,144 @@
+<main
+    id="main-content"
+    class="container-fluid"
+    role="main"
+>
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+        <header>
+            <h1 class="h3 fw-bold mb-1">
+                {{pageTitle}}
+            </h1>
+
+            <p class="text-muted mb-0">
+                {{pageDescription}}
+            </p>
+        </header>
+
+        <a
+            href="/groups/new"
+            class="btn text-white bg-primary"
+        >
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+            Crear grupo
+        </a>
+    </div>
+
+    <section
+        class="card border-0 shadow-sm mb-4"
+        aria-label="Búsqueda de grupos"
+    >
+        <div class="card-body">
+            <form
+                action="/groups"
+                method="GET"
+            >
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                    </span>
+
+                    <input
+                        type="search"
+                        name="search"
+                        class="form-control border-start-0"
+                        placeholder="Buscar grupos..."
+                        value="{{filters.search}}"
+                        aria-label="Buscar grupos"
+                    >
+                </div>
+            </form>
+        </div>
+    </section>
+
+    {{!-- <section
+        class="row g-4 mb-4"
+        aria-label="Estadísticas de grupos"
+    >
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small mb-2">
+                        Total de grupos
+                    </p>
+
+                    <p class="h3 fw-bold mb-0">
+                        {{stats.totalGroups}}
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small mb-2">
+                        Total estudiantes
+                    </p>
+
+                    <p
+                        class="h3 fw-bold mb-0"
+                        style="color: var(--color-success);"
+                    >
+                        {{stats.totalStudents}}
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small mb-2">
+                        Cuestionarios asignados
+                    </p>
+
+                    <p
+                        class="h3 fw-bold mb-0"
+                        style="color: var(--color-primary);"
+                    >
+                        {{stats.assignedQuizzes}}
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted small mb-2">
+                        Promedio de estudiantes por grupo
+                    </p>
+
+                    <p
+                        class="h3 fw-bold mb-0"
+                        style="color: var(--color-accent);"
+                    >
+                        {{stats.averageStudents}}
+                    </p>
+                </div>
+            </article>
+        </div>
+    </section> --}}
+
+    <section aria-label="Listado de grupos">
+        <div class="row g-4">
+            {{#if groups.length}}
+                {{#each groups}}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        {{> group-card}}
+                    </div>
+                {{/each}}
+            {{else}}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <p class="text-muted mb-0">
+                                No hay grupos registrados.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+    </section>
+</main>

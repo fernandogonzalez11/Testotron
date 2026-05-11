@@ -1,0 +1,44 @@
+<tr>
+  <td class="fw-medium">
+    {{question}}
+  </td>
+
+  <td>
+    {{type}}
+  </td>
+
+  <td>
+    <span class="badge text-bg-{{difficultyVariant}}">
+      {{difficulty}}
+    </span>
+  </td>
+
+  <td>
+    {{uses}}
+  </td>
+
+  <td>
+    <div class="d-flex align-items-center gap-2">
+      <a
+        href="/teacher/question-bank/{{id}}/edit"
+        class="btn btn-sm btn-outline-primary"
+        aria-label="Editar pregunta"
+      >
+        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+      </a>
+
+      <form
+        action="/teacher/question-bank/{{id}}/delete"
+        method="POST"
+      >
+        <button
+          type="submit"
+          class="btn btn-sm btn-outline-danger"
+          aria-label="Eliminar pregunta"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </td>
+</tr>

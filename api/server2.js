@@ -42,6 +42,181 @@ app.get('/teacher/quizzes', (req, res) => {
     res.render('teacher/quizzes', mockData);
 });
 
+app.get('/teacher/templates', (req, res) => {
+    const mockData = {
+        "appName": "Testotron",
+        "pageTitle": "Plantillas de cuestionarios",
+        "pageDescription": "Utiliza plantillas prediseñadas para crear cuestionarios más rápido",
+        "user": {
+            "name": "Profesor Carlos Mendoza",
+            "role": "teacher",
+            "initials": "CM"
+        },
+        "activePage": {
+            "templates": true
+        },
+        "templates": [
+            {
+            "id": 1,
+            "title": "Examen de Matemáticas",
+            "description": "Plantilla para evaluaciones de matemáticas con 20 preguntas",
+            "category": "Matemáticas",
+            "questions": 20,
+            "uses": 45
+            },
+            {
+            "id": 2,
+            "title": "Quiz de Historia",
+            "description": "Cuestionario básico de historia con preguntas de opción múltiple",
+            "category": "Historia",
+            "questions": 15,
+            "uses": 32
+            },
+            {
+            "id": 3,
+            "title": "Evaluación de Programación",
+            "description": "Plantilla técnica para evaluar conocimientos de programación",
+            "category": "Tecnología",
+            "questions": 25,
+            "uses": 67
+            },
+            {
+            "id": 4,
+            "title": "Test de Ciencias",
+            "description": "Plantilla general para ciencias naturales",
+            "category": "Ciencias",
+            "questions": 18,
+            "uses": 28
+            }
+        ]
+    };
+    res.render('teacher/templates', mockData);
+});
+
+app.get('/teacher/questions', (req, res) => {
+    const mockData = {
+        "appName": "Testotron",
+        "pageTitle": "Banco de preguntas",
+        "pageDescription": "Organiza y reutiliza preguntas en múltiples cuestionarios",
+        "user": {
+            "name": "Profesor Carlos Mendoza",
+            "role": "teacher",
+            "initials": "CM"
+        },
+        "activePage": {
+            "questionBank": true
+        },
+        "filters": {
+            "search": ""
+        },
+        "stats": {
+            "totalQuestions": 4,
+            "mostUsed": 15
+        },
+        "questions": [
+            {
+            "id": 1,
+            "question": "¿Cuál es la derivada de x²?",
+            "type": "Opción múltiple",
+            "difficulty": "Fácil",
+            "difficultyVariant": "success",
+            "uses": 12
+            },
+            {
+            "id": 2,
+            "question": "¿En qué año comenzó la Segunda Guerra Mundial?",
+            "type": "Respuesta corta",
+            "difficulty": "Media",
+            "difficultyVariant": "warning",
+            "uses": 8
+            },
+            {
+            "id": 3,
+            "question": "¿Qué es una función pura en programación?",
+            "type": "Opción múltiple",
+            "difficulty": "Difícil",
+            "difficultyVariant": "danger",
+            "uses": 5
+            },
+            {
+            "id": 4,
+            "question": "¿Cuál es la fórmula química del agua?",
+            "type": "Respuesta corta",
+            "difficulty": "Fácil",
+            "difficultyVariant": "success",
+            "uses": 15
+            }
+        ]
+    };
+    res.render('teacher/questions', mockData);
+});
+
+app.get('/groups', (req, res) => {
+    const mockData = {
+        appName: "Testotron",
+        pageTitle: "Mis grupos",
+        pageDescription: "Organiza estudiantes y asigna cuestionarios",
+
+        user: {
+            name: "Profesor Carlos Mendoza",
+            role: "teacher",
+            initials: "CM"
+        },
+
+        activePage: {
+            groups: true
+        },
+
+        filters: {
+            search: ""
+        },
+
+        stats: {
+            totalGroups: 4,
+            totalStudents: 143,
+            assignedQuizzes: 31,
+            averageStudents: 36
+        },
+
+        groups: [
+            {
+                id: 1,
+                name: "Ingeniería 2024",
+                code: "ING2024",
+                students: 42,
+                quizzes: 8,
+                createdAt: "2026-01-15"
+            },
+            {
+                id: 2,
+                name: "Humanidades A",
+                code: "HUM-A24",
+                students: 35,
+                quizzes: 5,
+                createdAt: "2026-01-20"
+            },
+            {
+                id: 3,
+                name: "Desarrollo Web",
+                code: "WEB2024",
+                students: 28,
+                quizzes: 12,
+                createdAt: "2026-02-01"
+            },
+            {
+                id: 4,
+                name: "Ciencias Naturales",
+                code: "CNAT24",
+                students: 38,
+                quizzes: 6,
+                createdAt: "2026-02-10"
+            }
+        ]
+    };
+
+    res.render('shared/groups', mockData);
+});
+
 app.get('/auth/login', (req, res) => {
     // Datos basados estrictamente en el Contrato JSON definido
     const mockData = {
