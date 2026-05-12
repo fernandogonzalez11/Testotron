@@ -21,14 +21,14 @@
       </p>
     </header>
 
-    <a
-      href="/teacher/question-bank/new"
+    <button
+      id="addQuestionBtn"
       class="btn text-white"
       style="background-color: var(--color-primary);"
     >
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       Nueva pregunta
-    </a>
+    </button>
   </div>
 
   <section
@@ -152,4 +152,8 @@
       </div>
     </div>
   </section>
+
+  {{> question-modal }}
+
 </main>
+<script src="/assets/js/question-modal.js"></script>

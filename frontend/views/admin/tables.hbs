@@ -1,0 +1,25 @@
+<main class="container-fluid py-4">
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <div id="main-content">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="adminTablesTabs" role="tablist">
+      {{#each tables}}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {{#if @first}}active{{/if}}" id="{{name}}-tab" data-bs-toggle="tab" data-bs-target="#tab-{{@index}}" type="button" role="tab" aria-controls="tab-{{@index}}" aria-selected="{{#if @first}}true{{else}}false{{/if}}">
+            {{name}}
+          </button>
+        </li>
+      {{/each}}
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content mt-3" id="adminTablesContent">
+      {{#each tables}}
+        <div class="tab-pane fade {{#if @first}}show active{{/if}}" id="tab-{{@index}}" role="tabpanel" aria-labelledby="{{name}}-tab">
+          {{> db-table headers=headers rows=rows actions=actions }}
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</main>
