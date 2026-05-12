@@ -168,6 +168,37 @@ app.get('/teacher/questions', (req, res) => {
     res.render('teacher/questions', mockData);
 });
 
+app.get('/teacher/quizzes/create', (req, res) => {
+  const mockData = {
+    appName: "Testotron",
+    pageTitle: "Crear nuevo cuestionario",
+    pageDescription: "Configura los detalles y añade preguntas",
+    user: { 
+      name: "Profesor Carlos Mendoza", 
+      role: "teacher", 
+      initials: "CM" 
+    },
+    activePage: { createQuiz: true },
+    categories: ["Matemáticas", "Historia", "Ciencias"],
+    groups: ["Crear como plantilla", "Ingeniería 2024", "Humanidades A"],
+    difficulties: ["Fácil", "Media", "Difícil"],
+    quiz: {
+      name: "",
+      description: "",
+      category: "Matemáticas",
+      group: "Crear como plantilla",
+      timeLimit: 30,
+      minScore: 70,
+      showAnswers: false,
+      allowRetries: false,
+      status: "Activo",
+      questions: []
+    }
+  };
+  res.render('teacher/create_quiz', mockData);
+});
+
+
 app.get('/admin/tables', (req, res) => {
     const mockData = {
         appName: "Testotron",

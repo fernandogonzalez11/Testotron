@@ -1,0 +1,121 @@
+<main id="main-content" class="container-fluid py-4" role="main">
+  <header class="mb-4">
+    <h1 class="h3 fw-bold">{{pageTitle}}</h1>
+    <p class="text-muted">{{pageDescription}}</p>
+  </header>
+
+  <!-- Configuración general -->
+  <section class="card border-0 shadow-sm mb-4" aria-label="Configuración general">
+    <div class="card-body">
+      <form id="quizForm">
+        <div class="mb-3">
+          <label for="quizName" class="form-label">Nombre del cuestionario *</label>
+          <input type="text" id="quizName" name="quizName" class="form-control" placeholder="Ej: Matemáticas - Unidad 1" value="{{quiz.name}}">
+        </div>
+
+        <div class="mb-3">
+          <label for="quizDescription" class="form-label">Descripción</label>
+          <textarea id="quizDescription" name="quizDescription" class="form-control" placeholder="Describe brevemente el contenido">{{quiz.description}}</textarea>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="quizCategory" class="form-label">Asignar a categoría</label>
+            <select id="quizCategory" name="quizCategory" class="form-select">
+              {{#each categories}}
+                <option value="{{this}}" {{#ifEquals this ../quiz.category}}selected{{/ifEquals}}>{{this}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="quizGroup" class="form-label">Asignar a grupo *</label>
+            <select id="quizGroup" name="quizGroup" class="form-select">
+              {{#each groups}}
+                <option value="{{this}}" {{#ifEquals this ../quiz.group}}selected{{/ifEquals}}>{{this}}</option>
+              {{/each}}
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-3">
+          <div class="col-md-6">
+            <label for="quizTime" class="form-label">Tiempo límite (minutos)</label>
+            <input type="number" id="quizTime" name="quizTime" class="form-control" value="{{quiz.timeLimit}}">
+          </div>
+          <div class="col-md-6">
+            <label for="quizScore" class="form-label">Puntuación mínima aprobatoria (%) *</label>
+            <input type="number" id="quizScore" name="quizScore" class="form-control" value="{{quiz.minScore}}">
+          </div>
+        </div>
+
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="showAnswers" name="showAnswers" {{#if quiz.showAnswers}}checked{{/if}}>
+          <label class="form-check-label" for="showAnswers">Mostrar respuestas correctas</label>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="allowRetries" name="allowRetries" {{#if quiz.allowRetries}}checked{{/if}}>
+          <label class="form-check-label" for="allowRetries">Permitir reintentos</label>
+        </div>
+
+        <div class="mt-3">
+          <label for="quizStatus" class="form-label">Estado *</label>
+          <select id="quizStatus" name="quizStatus" class="form-select">
+            <option value="Activo" {{#ifEquals quiz.status "Activo"}}selected{{/ifEquals}}>Activo</option>
+            <option value="Borrador" {{#ifEquals quiz.status "Borrador"}}selected{{/ifEquals}}>Borrador</option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Preguntas -->
+  <section class="card border-0 shadow-sm mb-4" aria-label="Preguntas">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="h5 mb-0">Preguntas</h2>
+      <button class="btn text-white" style="background-color: var(--color-primary);" data-bs-toggle="modal" data-bs-target="#questionModal">
+        <i class="bi bi-plus-lg me-1"></i> Añadir pregunta
+      </button>
+    </div>
+    <div class="card-body">
+      {{#if quiz.questions.length}}
+        <ul class="list-group">
+          {{#each quiz.questions}}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{this.text}}</strong>
+                <span class="text-muted small">({{this.type}})</span>
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover arriba">
+                  <i class="bi bi-arrow-up"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover abajo">
+                  <i class="bi bi-arrow-down"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar pregunta">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </li>
+          {{/each}}
+        </ul>
+      {{else}}
+        <p class="text-muted">No hay preguntas añadidas aún.</p>
+      {{/if}}
+    </div>
+  </section>
+
+  <!-- Acciones -->
+  <div class="d-flex justify-content-end gap-2">
+    <a href="/teacher/quizzes" type="button" class="btn btn-secondary">Cancelar</a>
+    <button type="button" class="btn btn-accent text-white" style="background-color: var(--color-accent);">Guardar como borrador</button>
+    <button type="submit" form="quizForm" class="btn btn-success text-white" style="background-color: var(--color-success);">Publicar cuestionario</button>
+  </div>
+
+  <!-- Modal de preguntas -->
+  {{> question-modal }}
+</main>
+<script src="/assets/js/question-modal.js"></script>
+<script src="/assets/js/create-quiz.js"></script>
