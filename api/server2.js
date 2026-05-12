@@ -1,7 +1,6 @@
 const express = require('express');
 const { engine } = require('express-handlebars');
 const path = require('path');
-
 const app = express();
 
 // Configuración de Handlebars
@@ -11,12 +10,16 @@ app.engine('.hbs', engine({
     layoutsDir: path.join(__dirname, '../frontend/views/layouts'),
     partialsDir: path.join(__dirname, '../frontend/components'),
     helpers: {
-        eq: (a, b) => a === b // Helper esencial para comparar roles
+        eq: (a, b) => a === b, // Helper esencial para comparar roles
+        ifEquals: function (arg1, arg2, options) {
+            return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
+        }
     }
 }));
 
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, '../frontend/views'));
+
 
 // Servir archivos estáticos (CSS, Imágenes)
 app.use('/assets', express.static(path.join(__dirname, '../frontend/assets')));
@@ -146,10 +149,103 @@ app.get('/teacher/questions', (req, res) => {
             "difficultyVariant": "success",
             "uses": 15
             }
-        ]
+        ],
+        "questionForm": {
+            types: ["Selección única", "Selección múltiple", "Respuesta corta"],
+            categories: ["Matemáticas", "Historia", "Ciencias"],
+            difficulties: ["Fácil", "Media", "Difícil"],
+            current: {
+                type: "Selección única",
+                category: "Matemáticas",
+                difficulty: "Media",
+                options: [
+                    { text: "Opción 1", correct: false },
+                    { text: "Opción 2", correct: true }
+                ]
+            }
+        }
     };
     res.render('teacher/questions', mockData);
 });
+
+app.get('/admin/tables', (req, res) => {
+    const mockData = {
+        appName: "Testotron",
+        pageTitle: "Panel de administración",
+        user: { 
+            name: "Admin General", 
+            role: "admin", 
+            initials: "AG" 
+        },
+        activePage: { tables: true },
+        stats: { 
+            totalUsers: 245, 
+            activeQuizzes: 48, 
+            admins: 5, 
+            activityToday: 127 
+        },
+        tables: [
+            {
+                name: "Usuarios",
+                headers: ["Usuario", "Email", "Rol", "Estado", "Registro"],
+                rows: [
+                    { Usuario: "Ana García", Email: "ana@mail.com", Rol: "student", Estado: "active", Registro: "2026-01-15" },
+                    { Usuario: "Carlos Mendoza", Email: "carlos@mail.com", Rol: "teacher", Estado: "active", Registro: "2026-01-10" },
+                    { Usuario: "María López", Email: "maria@mail.com", Rol: "student", Estado: "active", Registro: "2026-02-01" }
+                ],
+                actions: [
+                    { label: "Editar", icon: "bi-pencil", url: "/admin/users/edit/{{id}}", color: "primary" }
+                ]
+            },
+            {
+                name: "Grupos",
+                headers: ["Nombre", "Miembros", "Creación", "Estado"],
+                rows: [
+                    { Nombre: "Ingeniería 2024", Miembros: 32, Creación: "2025-09-01", Estado: "active" },
+                    { Nombre: "Humanidades A", Miembros: 28, Creación: "2025-10-12", Estado: "active" }
+                ]
+            },
+            {
+                name: "Cuestionarios y plantillas",
+                headers: ["Título", "Código", "Creación", "Preguntas", "Estado"],
+                rows: [
+                    { Título: "Matemáticas Avanzadas - Unidad 3", Código: "MAT-2024", Creación: "2026-03-15", Preguntas: 15, Estado: "active" },
+                    { Título: "Historia Universal Contemporánea", Código: "HIS-7832", Creación: "2026-03-18", Preguntas: 20, Estado: "active" }
+                ]
+            }
+        ]
+    };
+    res.render('admin/tables', mockData);
+});
+
+app.get('/teacher/questions/new', (req, res) => {
+    const mockData = {
+        appName: "Testotron",
+        pageTitle: "Banco de preguntas",
+        user: { 
+            name: "Profesor Carlos Mendoza", 
+            role: "teacher", 
+            initials: "CM" 
+        },
+        activePage: { questions: true },
+        questionForm: {
+            types: ["Selección única", "Selección múltiple", "Respuesta corta"],
+            categories: ["Matemáticas", "Historia", "Ciencias"],
+            difficulties: ["Fácil", "Media", "Difícil"],
+            current: {
+                type: "Selección única",
+                category: "Matemáticas",
+                difficulty: "Media",
+                options: [
+                    { text: "Opción 1", correct: false },
+                    { text: "Opción 2", correct: true }
+                ]
+            }
+        }
+    };
+    res.render('teacher/new-question', mockData);
+});
+
 
 app.get('/groups', (req, res) => {
     const mockData = {
