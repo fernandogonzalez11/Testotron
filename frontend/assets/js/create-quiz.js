@@ -1,3 +1,4 @@
+/*
 document.addEventListener('DOMContentLoaded', () => {
   const questionsList = document.querySelector('#main-content .card[aria-label="Preguntas"] ul.list-group');
   const addQuestionBtn = document.querySelector('[data-bs-target="#questionModal"]');
@@ -186,3 +187,60 @@ document.addEventListener('DOMContentLoaded', () => {
   // Inicializar lista vacía
   renderQuestions();
 });
+*/
+
+document.addEventListener('DOMContentLoaded', () => {
+  const questionsList = document.getElementById('section-preguntas');
+  let questions = [];
+
+  function renderQuestions() {
+    questionsList.innerHTML = '';
+    if (questions.length === 0) {
+      const emptyLi = document.createElement('li');
+      emptyLi.className = 'list-group-item text-muted';
+      emptyLi.textContent = 'No hay preguntas añadidas aún.';
+      questionsList.appendChild(emptyLi);
+      return;
+    }
+    questions.forEach((q, index) => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      li.innerHTML = `
+        <div><strong>${q.text}</strong> <span class="text-muted small">(${q.type})</span></div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover arriba"><i class="bi bi-arrow-up"></i></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover abajo"><i class="bi bi-arrow-down"></i></button>
+          <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar pregunta"><i class="bi bi-trash"></i></button>
+        </div>
+      `;
+      // listeners mover/eliminar
+      const [upBtn, downBtn, delBtn] = li.querySelectorAll('button');
+      upBtn.addEventListener('click', () => {
+        if (index > 0) {
+          [questions[index - 1], questions[index]] = [questions[index], questions[index - 1]];
+          renderQuestions();
+        }
+      });
+      downBtn.addEventListener('click', () => {
+        if (index < questions.length - 1) {
+          [questions[index + 1], questions[index]] = [questions[index], questions[index + 1]];
+          renderQuestions();
+        }
+      });
+      delBtn.addEventListener('click', () => {
+        questions.splice(index, 1);
+        renderQuestions();
+      });
+      questionsList.appendChild(li);
+    });
+  }
+
+  // Escuchar evento del modal
+  document.addEventListener('question:add', (e) => {
+    questions.push({ text: e.detail.text, type: e.detail.type });
+    renderQuestions();
+  });
+
+  renderQuestions();
+});
+

@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="question-modal-form">
           <!-- Pregunta -->
           <div class="mb-3">
             <label for="questionText" class="form-label">Pregunta</label>
@@ -78,12 +78,14 @@
               <input type="text" class="form-control" placeholder="Respuesta esperada">
             {{/ifEquals}}
           </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Agregar pregunta</button>
+        </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-success">Agregar pregunta</button>
-      </div>
+      
     </div>
   </div>
 </div>

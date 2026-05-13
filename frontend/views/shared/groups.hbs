@@ -14,13 +14,25 @@
             </p>
         </header>
 
-        <a
+        {{!-- <a
             href="/groups/new"
             class="btn text-white bg-primary"
         >
             <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
             Crear grupo
-        </a>
+        </a> --}}
+
+        <button
+            class="btn text-white"
+            style="background-color: var(--color-primary);"
+            data-bs-toggle="modal"
+            data-bs-target="#groupModal"
+        >
+        <i class="bi bi-plus-lg me-1"></i> Nuevo grupo
+        </button>
+
+        {{> group-modal }}
+
     </div>
 
     <section

@@ -193,10 +193,61 @@ app.get('/teacher/quizzes/create', (req, res) => {
       allowRetries: false,
       status: "Activo",
       questions: []
+    },
+    "questionForm": {
+        types: ["Selección única", "Selección múltiple", "Respuesta corta"],
+        categories: ["Matemáticas", "Historia", "Ciencias"],
+        difficulties: ["Fácil", "Media", "Difícil"],
+        current: {
+            type: "Selección única",
+            category: "Matemáticas",
+            difficulty: "Media",
+            options: [
+                { text: "Opción 1", correct: false },
+                { text: "Opción 2", correct: true }
+            ]
+        }
     }
   };
   res.render('teacher/create_quiz', mockData);
 });
+
+app.get('/teacher/quizzes/view/:id', (req, res) => {
+  const mockData = {
+    appName: "Testotron",
+    pageTitle: "Resultados de cuestionarios",
+    pageDescription: "Visualiza y exporta los resultados de tus estudiantes",
+    user: { 
+      name: "Profesor Carlos Mendoza", 
+      role: "teacher", 
+      initials: "CM" 
+    },
+    activePage: { results: true },
+    filters: {
+      group: "Todos los grupos",
+      status: "Todos los estados",
+      search: ""
+    },
+    stats: {
+      totalResults: 8,
+      averageScore: 79.4,
+      approvalRate: 75.0,
+      totalAttempts: 10
+    },
+    results: [
+      { student: "Ana García Martínez", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "87%", status: "Aprobado", date: "2026-04-05", time: "24:35" },
+      { student: "Carlos López Ramírez", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "92%", status: "Aprobado", date: "2026-04-05", time: "22:10" },
+      { student: "María Fernández Soto", quiz: "Historia Universal Contemporánea", group: "Humanidades A", score: "65%", status: "Reprobado", date: "2026-04-04", time: "28:45" },
+      { student: "Juan Pérez González", quiz: "Programación Web - React", group: "Desarrollo Web", score: "95%", status: "Aprobado", date: "2026-04-05", time: "30:20" },
+      { student: "Laura Sánchez Torres", quiz: "Química Orgánica - Parcial 1", group: "Ciencias Naturales", score: "78%", status: "Aprobado", date: "2026-04-03", time: "35:11" },
+      { student: "Pedro Martínez Ruiz", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "58%", status: "Reprobado", date: "2026-04-04", time: "30:00" },
+      { student: "Sofía Rodríguez Díaz", quiz: "Historia Universal Contemporánea", group: "Humanidades A", score: "88%", status: "Aprobado", date: "2026-04-04", time: "26:34" },
+      { student: "Diego Hernández Luna", quiz: "Programación Web - React", group: "Desarrollo Web", score: "72%", status: "Aprobado", date: "2026-04-03", time: "29:55" }
+    ]
+  };
+  res.render('teacher/results', mockData);
+});
+
 
 
 app.get('/admin/tables', (req, res) => {
@@ -343,6 +394,39 @@ app.get('/groups', (req, res) => {
 
     res.render('shared/groups', mockData);
 });
+
+app.get('/groups/:id', (req, res) => {
+  const mockData = {
+    appName: "Testotron",
+    pageTitle: "Grupo Ingeniería 2024",
+    user: { 
+      name: "Profesor Carlos Mendoza", 
+      role: "teacher", 
+      initials: "CM" 
+    },
+    activePage: { groups: true },
+    group: {
+      name: "Ingeniería 2024",
+      membersCount: 42,
+      quizzesCount: 3,
+      averageScore: 86,
+      accessCode: "ING2024",
+      members: [
+        { name: "Ana García", email: "ana.garcia@gmail.com", progress: 92 },
+        { name: "Carlos López", email: "carlos.lopez@gmail.com", progress: 88 },
+        { name: "María Rodríguez", email: "maria.rodriguez@gmail.com", progress: 85 },
+        { name: "Juan Martínez", email: "juan.martinez@gmail.com", progress: 90 }
+      ],
+      quizzes: [
+        { title: "Matemáticas Avanzadas - Unidad 3", responses: "34/42", average: 87 },
+        { title: "Física Mecánica - Dinámica", responses: "40/42", average: 84 },
+        { title: "Programación Web - React", responses: "34/42", average: 90 }
+      ]
+    }
+  };
+  res.render('shared/group-info', mockData);
+});
+
 
 app.get('/auth/login', (req, res) => {
     // Datos basados estrictamente en el Contrato JSON definido
