@@ -1,0 +1,29 @@
+<div class="modal fade" id="groupModal" tabindex="-1" aria-labelledby="groupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="groupModalLabel">Crear nuevo grupo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="groupForm">
+          <!-- Nombre del grupo -->
+          <div class="mb-3">
+            <label for="groupName" class="form-label">Nombre del grupo *</label>
+            <input type="text" id="groupName" name="groupName" class="form-control" placeholder="Ej: Ingeniería 2024" required>
+          </div>
+
+          <!-- Descripción -->
+          <div class="mb-3">
+            <label for="groupDescription" class="form-label">Descripción</label>
+            <textarea id="groupDescription" name="groupDescription" class="form-control" placeholder="Describe brevemente el grupo"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="groupForm" class="btn btn-success">Crear grupo</button>
+      </div>
+    </div>
+  </div>
+</div>

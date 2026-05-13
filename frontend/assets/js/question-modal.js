@@ -1,49 +1,3 @@
-/*document.addEventListener('DOMContentLoaded', () => {
-  const questionTypeSelect = document.getElementById('questionType');
-  const answerOptionsContainer = document.getElementById('answerOptions');
-  const addOptionButtons = document.querySelectorAll('[aria-label="Añadir opción"]');
-
-  // Abrir modal desde botón "Nueva pregunta"
-  const newQuestionBtn = document.querySelector('a[href="/teacher/question-bank/new"]');
-  if (newQuestionBtn) {
-    newQuestionBtn.setAttribute('data-bs-toggle', 'modal');
-    newQuestionBtn.setAttribute('data-bs-target', '#questionModal');
-    newQuestionBtn.removeAttribute('href');
-  }
-
-  // Añadir nueva opción dinámicamente
-  addOptionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const type = questionTypeSelect.value;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'input-group mb-2';
-
-      if (type === 'Selección única') {
-        wrapper.innerHTML = `
-          <div class="input-group-text">
-            <input class="form-check-input mt-0" type="radio" name="correctOption" aria-label="Seleccionar como correcta">
-          </div>
-          <input type="text" class="form-control" placeholder="Texto de opción">
-        `;
-      } else if (type === 'Selección múltiple') {
-        wrapper.innerHTML = `
-          <div class="input-group-text">
-            <input class="form-check-input mt-0" type="checkbox" aria-label="Seleccionar como correcta">
-          </div>
-          <input type="text" class="form-control" placeholder="Texto de opción">
-        `;
-      }
-      answerOptionsContainer.insertBefore(wrapper, btn);
-    });
-  });
-
-  // Cambiar tipo de pregunta (simplificado: aquí podrías limpiar y regenerar inputs)
-  questionTypeSelect.addEventListener('change', () => {
-    // En un proyecto real, aquí harías un render dinámico según el tipo seleccionado
-    // Por ahora, dejamos que Handlebars inicialice y el botón "Añadir opción" agregue más
-  });
-});*/
-
 document.addEventListener('DOMContentLoaded', () => {
   const questionTypeSelect = document.getElementById('questionType');
   const answerOptionsContainer = document.getElementById('answerOptions');
@@ -154,4 +108,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // En un proyecto real, aquí harías un render dinámico según el tipo seleccionado
     // Por ahora, dejamos que Handlebars inicialice y el botón "Añadir opción" agregue más
   });
+});
+
+form = document.getElementById('question-modal-form');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = form.querySelector('#questionText').value.trim();
+  const type = form.querySelector('#questionType').value;
+
+  if (!text) return;
+
+  const event = new CustomEvent('question:add', {
+    detail: { text, type }
+  });
+  document.dispatchEvent(event);
+
+  const modal = bootstrap.Modal.getInstance(questionModal);
+  modal.hide();
+  form.reset();
 });
