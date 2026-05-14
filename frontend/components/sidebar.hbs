@@ -5,7 +5,7 @@
         {{#if (eq user.role 'teacher')}}
             <li class="nav-item">
                 <a href="/teacher/dashboard" class="nav-link {{#if activePage.dashboard}}active{{else}}link-dark{{/if}}" aria-current="{{#if activePage.dashboard}}page{{/if}}">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    <i class="bi bi-house-door me-2"></i> Dashboard
                 </a>
             </li>
             <li>
@@ -33,18 +33,18 @@
                 </a>
             </li>
             <li>
-                <a href="/student/my-quizzes" class="nav-link {{#if activePage.myQuizzes}}active{{else}}link-dark{{/if}}">
-                    <i class="bi bi-pencil-square me-2"></i> Mis cuestionarios
+                <a href="/student/quizzes" class="nav-link {{#if activePage.myQuizzes}}active{{else}}link-dark{{/if}}">
+                    <i class="bi bi-journal-text me-2"></i> Cuestionarios
                 </a>
             </li>
             <li>
                 <a href="/student/results" class="nav-link {{#if activePage.results}}active{{else}}link-dark{{/if}}">
-                    <i class="bi bi-trophy me-2"></i> Resultados
+                    <i class="bi bi-bar-chart me-2"></i> Resultados
                 </a>
             </li>
             <li>
                 <a href="/groups" class="nav-link {{#if activePage.groups}}active{{else}}link-dark{{/if}}">
-                    <i class="bi bi-collection me-2"></i> Grupos
+                    <i class="bi bi-people me-2"></i> Grupos
                 </a>
             </li>
         {{/if}}

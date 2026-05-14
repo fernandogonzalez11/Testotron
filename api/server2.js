@@ -328,6 +328,247 @@ app.get('/teacher/questions/new', (req, res) => {
     res.render('teacher/new-question', mockData);
 });
 
+app.get('/student/quizzes', (req, res) => {
+  const mockData = {
+    appName: "Testotron",
+    pageTitle: "Mis cuestionarios",
+    pageDescription: "Consulta y realiza tus cuestionarios asignados",
+    user: { 
+      name: "Ana García", 
+      role: "student", 
+      initials: "AG" 
+    },
+    activePage: { studentQuizzes: true },
+    filters: {
+      group: "Todos los grupos",
+      status: "Todos los estados",
+      search: ""
+    },
+    stats: {
+      totalAssigned: 6,
+      completed: 3,
+      pending: 3,
+      averageScore: 82.3
+    },
+    quizzes: [
+      { title: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", questions: 15, timeLimit: 30, dueDate: "2026-04-10", attempts: "1/2", score: "87%", canRetry: true },
+      { title: "Historia Universal Contemporánea", group: "Humanidades A", questions: 20, timeLimit: 45, dueDate: "2026-04-12", attempts: "0/1", score: null, canRetry: false },
+      { title: "Programación Web - React", group: "Desarrollo Web", questions: 25, timeLimit: 60, dueDate: "2026-04-15", attempts: "1/3", score: "95%", canRetry: true },
+      { title: "Química Orgánica - Parcial 1", group: "Ciencias Naturales", questions: 30, timeLimit: 40, dueDate: "2026-04-08", attempts: "0/1", score: null, canRetry: false },
+      { title: "Física Mecánica - Dinámica", group: "Física Aplicada", questions: 22, timeLimit: 35, dueDate: "2026-04-05", attempts: "2/2", score: "65%", canRetry: false },
+      { title: "Literatura Latinoamericana", group: "Letras B", questions: 18, timeLimit: 18, dueDate: "2026-04-20", attempts: "0/1", score: null, canRetry: false }
+    ]
+  };
+  res.render('student/quizzes', mockData);
+});
+
+app.get('/student/quiz/:id', (req, res) => {
+    const mockData = {
+        appName: "Testotron",
+        "quizTitle": "Matemáticas avanzadas - Unidad 3",
+        "quizCode": "QUIZ-1",
+        user: { 
+            name: "Ana García", 
+            role: "student", 
+            initials: "AG" 
+        },
+        "timer": {
+            "timeLimit": 1800,
+            "elapsedTime": 0
+        },
+        "progress": {
+            "current": 0,
+            "total": 7
+        },
+        "questions": [
+            {
+            "id": 1,
+            "text": "¿Cuál es la derivada de la función f(x) = x²?",
+            "options": [
+                { "id": "a", "text": "2x" },
+                { "id": "b", "text": "x" },
+                { "id": "c", "text": "2" },
+                { "id": "d", "text": "x²" }
+            ]
+            },
+            {
+            "id": 2,
+            "text": "¿Cuál es el límite de f(x) = 1/x cuando x tiende a infinito?",
+            "options": [
+                { "id": "a", "text": "0" },
+                { "id": "b", "text": "1" },
+                { "id": "c", "text": "Infinito" },
+                { "id": "d", "text": "No existe" }
+            ]
+            },
+            {
+            "id": 3,
+            "text": "¿Cuál es la integral de f(x) = 2x?",
+            "options": [
+                { "id": "a", "text": "x² + C" },
+                { "id": "b", "text": "2x²" },
+                { "id": "c", "text": "x²" },
+                { "id": "d", "text": "2x + C" }
+            ]
+            },
+            {
+            "id": 4,
+            "text": "¿Cuál es la integral de f(x) = 2x?",
+            "options": [
+                { "id": "a", "text": "x² + C" },
+                { "id": "b", "text": "2x²" },
+                { "id": "c", "text": "x²" },
+                { "id": "d", "text": "2x + C" }
+            ]
+            },
+            {
+            "id": 5,
+            "text": "¿Cuál es la integral de f(x) = 2x?",
+            "options": [
+                { "id": "a", "text": "x² + C" },
+                { "id": "b", "text": "2x²" },
+                { "id": "c", "text": "x²" },
+                { "id": "d", "text": "2x + C" }
+            ]
+            },
+            {
+            "id": 6,
+            "text": "¿Cuál es la integral de f(x) = 2x?",
+            "options": [
+                { "id": "a", "text": "x² + C" },
+                { "id": "b", "text": "2x²" },
+                { "id": "c", "text": "x²" },
+                { "id": "d", "text": "2x + C" }
+            ]
+            },
+            {
+            "id": 7,
+            "text": "¿Cuál es la integral de f(x) = 2x?",
+            "options": [
+                { "id": "a", "text": "x² + C" },
+                { "id": "b", "text": "2x²" },
+                { "id": "c", "text": "x²" },
+                { "id": "d", "text": "2x + C" }
+            ]
+            }
+        ],
+        "layout": "quiz"
+    };
+    res.render('student/quiz', mockData);
+});
+
+app.get('/results/quiz/:id', (req, res) => {
+    // const mockData = {
+    //     appName: "Testotron",
+    //     user: { 
+    //         name: "Ana García", 
+    //         role: "student", 
+    //         initials: "AG" 
+    //     },
+    //     "quizTitle": "Matemáticas avanzadas - Unidad 3",
+    //     "quizCode": "QUIZ-1",
+    //     "result": {
+    //         "status": "Aprobado",
+    //         "scorePercent": 87,
+    //         "correctAnswers": 13,
+    //         "totalQuestions": 15,
+    //         "timeSpent": "24:35",
+    //         "minScore": 70
+    //     },
+    //     "answers": [
+    //         {
+    //         "id": 1,
+    //         "text": "¿Cuál es la derivada de la función f(x) = x²?",
+    //         "userAnswer": "2x",
+    //         "isCorrect": true
+    //         },
+    //         {
+    //         "id": 2,
+    //         "text": "¿Cuál es el resultado de la integral ∫3 dx?",
+    //         "userAnswer": "3x + c",
+    //         "isCorrect": true
+    //         },
+    //         {
+    //         "id": 3,
+    //         "text": "¿Qué es un límite en cálculo?",
+    //         "userAnswer": "El valor al que se aproxima una función",
+    //         "isCorrect": true
+    //         },
+    //         {
+    //         "id": 4,
+    //         "text": "Resuelve: lim(x→0) sin(x)/x",
+    //         "userAnswer": "0",
+    //         "isCorrect": false,
+    //         "correctAnswer": "1"
+    //         },
+    //         {
+    //         "id": 5,
+    //         "text": "¿Cuál es la regla de la cadena?",
+    //         "userAnswer": "d/dx[f(g(x))] = f’(g(x))g’(x)",
+    //         "isCorrect": true
+    //         }
+    //     ],
+    //     "groupStats": {
+    //         "average": 82,
+    //         "position": 5,
+    //         "totalStudents": 42,
+    //         "highestScore": 98
+    //     }
+    // };
+
+    const mockData = {
+        appName: "Testotron",
+        user: { 
+            name: "Ana García", 
+            role: "student", 
+            initials: "AG" 
+        },
+        "quizTitle": "Matemáticas avanzadas - Unidad 3",
+        "score": 87,
+        "minScore": 70,
+        "correctAnswers": 13,
+        "totalQuestions": 15,
+        "timeSpent": "24:35",
+        "passed": true,
+        "answers": [
+            {
+            "question": "¿Cuál es la derivada de la función f(x) = x²?",
+            "yourAnswer": "2x",
+            "isCorrect": true
+            },
+            {
+            "question": "¿Cuál es el resultado de la integral ∫3x dx?",
+            "yourAnswer": "(3/2)x²",
+            "isCorrect": true
+            },
+            {
+            "question": "¿Qué es un límite en cálculo?",
+            "yourAnswer": "El valor al que se aproxima una función",
+            "isCorrect": true
+            },
+            {
+            "question": "Resuelve: lim(x→0) sin(x)/x",
+            "yourAnswer": "0",
+            "isCorrect": false,
+            "correctAnswer": "1"
+            },
+            {
+            "question": "¿Cuál es la regla de la cadena?",
+            "yourAnswer": "d/dx[f(g(x))] = f’(g(x))g’(x)",
+            "isCorrect": true
+            }
+        ],
+        "groupStats": {
+            "average": 82,
+            "position": 5,
+            "totalStudents": 42,
+            "highestScore": 98
+        }
+        };
+
+
+    res.render('shared/quiz-result', mockData);
+});
 
 app.get('/groups', (req, res) => {
     const mockData = {

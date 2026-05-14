@@ -1,0 +1,14 @@
+<article class="card mb-4" role="group" aria-labelledby="question-{{id}}">
+  <div class="card-body">
+    <h2 id="question-{{id}}" class="h5 mb-3">Pregunta {{id}}</h2>
+    <p>{{text}}</p>
+    <div class="list-group">
+      {{#each options}}
+        <label class="list-group-item">
+          <input type="radio" name="question-{{../id}}" value="{{id}}" class="form-check-input me-2">
+          {{text}}
+        </label>
+      {{/each}}
+    </div>
+  </div>
+</article>

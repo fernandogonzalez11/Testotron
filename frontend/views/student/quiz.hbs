@@ -1,0 +1,26 @@
+<section aria-labelledby="quiz-title" class="container-fluid">
+  {{!-- <div style="position: fixed; top: 110px; left: 2%; width: 15%; height: auto;">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0">Ir a pregunta</h5>
+      </div>
+      <div class="card-body">
+        {{> question-nav questions}}
+      </div>
+    </div>
+  </div> --}}
+  <div style="margin-left: 15%;">
+    <h1 id="quiz-title" class="mb-4">{{quizTitle}}</h1>
+    <p class="text-muted">Código: {{quizCode}}</p>
+
+    {{#each questions}}
+      {{> question-card this}}
+    {{/each}}
+
+    <div class="mt-4 d-flex justify-content-end">
+      <button type="submit" class="btn btn-success" aria-label="Enviar respuestas">
+        <i class="bi bi-check-circle"></i> Enviar
+      </button>
+    </div>
+  </div>
+</section>

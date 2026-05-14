@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{quizTitle}}</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="icon" type="image/x-icon" href="/assets/img/logo.png">
+
+  <script src="/assets/js/quiz.js" defer></script>
+</head>
+<body>
+  <a href="#main-content" 
+        class="visually-hidden-focusable position-absolute top-0 start-0 m-3 btn btn-light shadow-lg" 
+        style="z-index: 2000;">
+        Saltar al contenido principal
+  </a>
+
+  <div class="d-flex flex-column min-vh-100">
+        <!-- Navbar Superior (Accesibilidad: role="banner") -->
+        <header role="banner">
+            {{> navbar}}
+
+            <div class="container-fluid d-flex justify-content-between align-items-center py-2">
+              {{> progress-bar progress}}
+              {{> timer timer}}
+            </div>
+        </header>
+
+        <div class="d-flex flex-grow-1" style="height: calc(100vh - 100px); overflow: hidden;">
+            <!-- Right Column: Main + Footer -->
+            <div class="d-flex flex-column flex-grow-1">
+                <div style="position: fixed; top: 110px; left: 2%; width: 15%; height: auto;">
+                  <div class="card h-100">
+                    <div class="card-header">
+                      <h5 class="mb-0">Ir a pregunta</h5>
+                    </div>
+                    <div class="card-body">
+                      {{> question-nav questions}}
+                    </div>
+                  </div>
+                </div>
+                <!-- Main content scrolls independently -->
+                <main id="main-content" class="container container-fluid p-4 flex-grow-1 overflow-auto" role="main">
+                    {{{body}}}
+                </main>
+
+                <!-- Footer stays at the bottom of this flex column -->
+                <footer class="py-2 border-top bg-white" role="contentinfo">
+                    <div class="text-center text-muted small px-4">
+                        {{> footer}}
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+
+  {{!-- <main id="main-content" class="container mt-5 pt-4">
+    {{{body}}}
+  </main> --}}
+</body>
+</html>
