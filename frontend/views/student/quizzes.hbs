@@ -1,0 +1,76 @@
+<main id="main-content" class="container py-4" style="padding-top: 70px;" role="main">
+  <header class="mb-4">
+    <h1 class="h4 fw-bold">{{pageTitle}}</h1>
+    <p class="text-muted small">{{pageDescription}}</p>
+  </header>
+
+  <!-- Filtros -->
+  <section class="card border-0 shadow-sm mb-4" aria-label="Filtros de cuestionarios">
+    <div class="card-body">
+      <form class="row g-3 align-items-center">
+        <div class="col-md-3">
+          <select class="form-select" name="group">
+            <option>Todos los grupos</option>
+            <!-- aquí se pueden iterar grupos -->
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" name="status">
+            <option>Todos los estados</option>
+            <option>Realizados</option>
+            <option>Pendientes</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input type="search" class="form-control" name="search" placeholder="Buscar cuestionario..." value="{{filters.search}}">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Estadísticas -->
+  <section class="row g-4 mb-4" aria-label="Resumen de cuestionarios">
+    <div class="col-12 col-md-3">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-2">Total asignados</p>
+          <p class="h3 fw-bold mb-0">{{stats.totalAssigned}}</p>
+        </div>
+      </article>
+    </div>
+    <div class="col-12 col-md-3">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-2">Realizados</p>
+          <p class="h3 fw-bold mb-0">{{stats.completed}}</p>
+        </div>
+      </article>
+    </div>
+    <div class="col-12 col-md-3">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-2">Pendientes</p>
+          <p class="h3 fw-bold mb-0">{{stats.pending}}</p>
+        </div>
+      </article>
+    </div>
+    <div class="col-12 col-md-3">
+      <article class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-2">Promedio</p>
+          <p class="h3 fw-bold mb-0">{{stats.averageScore}}%</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Lista de cuestionarios -->
+  <section class="row g-3" aria-label="Listado de cuestionarios">
+    {{#each quizzes}}
+      {{> quiz-card }}
+    {{/each}}
+  </section>
+</main>

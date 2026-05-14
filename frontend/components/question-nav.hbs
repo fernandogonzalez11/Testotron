@@ -1,0 +1,9 @@
+<nav aria-label="Navegador de preguntas" class="mt-3">
+  <ul class="list-unstyled d-flex flex-wrap gap-2">
+    {{#each this}}
+      <li>
+        <a class="btn btn-sm btn-outline-primary" href="#question-{{id}}" aria-label="Ir a pregunta {{id}}">{{id}}</a>
+      </li>
+    {{/each}}
+  </ul>
+</nav>

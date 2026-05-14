@@ -1,0 +1,30 @@
+<div class="p-3 mb-4 rounded text-white {{#if passed}}bg-success{{else}}bg-danger{{/if}}" role="status">
+  <h2 class="h5 mb-3">
+    {{#if passed}}
+      <i class="bi bi-check-circle-fill me-2"></i> ¡Aprobado!
+    {{else}}
+      <i class="bi bi-x-circle-fill me-2"></i> No aprobado
+    {{/if}}
+  </h2>
+  <p class="mb-2">
+    {{#if passed}}
+      Has superado el cuestionario exitosamente
+    {{else}}
+      No alcanzaste la puntuación mínima
+    {{/if}}
+  </p>
+  <div class="row">
+    <div class="col-6 col-md-3 mb-2">
+      <strong>Puntuación:</strong> {{score}}%
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <strong>Correctas:</strong> {{correctAnswers}} / {{totalQuestions}}
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <strong>Tiempo:</strong> {{timeSpent}}
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+      <strong>Mínimo:</strong> {{minScore}}%
+    </div>
+  </div>
+</div>
