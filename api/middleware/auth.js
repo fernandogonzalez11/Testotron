@@ -1,21 +1,27 @@
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.JWT_SECRET || 'secretdev';
+const SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 function generateToken(payload) {
   return jwt.sign(payload, SECRET, { expiresIn: '8h' });
 }
 
+// Accept cookie-populated req.user first; fallback to Authorization header
 function authMiddleware(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: 'Missing authorization header' });
-  const parts = auth.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') return res.status(401).json({ error: 'Invalid authorization format' });
   try {
-    const payload = jwt.verify(parts[1], SECRET);
-    req.user = payload;
-    next();
+    if (req.user) return next();
+    const auth = req.headers.authorization;
+    if (!auth) return res.status(401).json({ error: 'Missing authorization header or cookie' });
+    const parts = auth.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') return res.status(401).json({ error: 'Invalid authorization format' });
+    try {
+      const payload = jwt.verify(parts[1], SECRET);
+      req.user = payload;
+      return next();
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(500).json({ error: 'Internal auth error' });
   }
 }
 

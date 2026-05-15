@@ -8,8 +8,15 @@ function authPopulate(secret) {
       const authHeader = req.headers && req.headers.authorization;
       const bearer = authHeader && authHeader.split && authHeader.split(' ')[1];
       const token = cookieToken || bearer;
-      if (!token) return next();
-      const payload = jwt.verify(token, s);
+      if (!token) {
+        return next();
+      }
+      let payload;
+      try {
+        payload = jwt.verify(token, s);
+      } catch (err) {
+        return next();
+      }
       req.user = {
         id: payload.id,
         email: payload.email,

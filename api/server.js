@@ -71,7 +71,7 @@ function baseContext(req, extra = {}) {
         name: u.name || u.email || 'Usuario',
         role: u.role || 'guest',
         initials: (u.name || '').split(' ').map(s => s[0] || '').slice(0,2).join('').toUpperCase()
-    } : { name: 'Invitado', role: 'teacher', initials: '??' };
+    } : { name: 'Invitado', role: 'guest', initials: '??' }; 
 
     return Object.assign({
         appName: APP_NAME,
