@@ -47,11 +47,11 @@
     return body;
   }
 
-  async function register(email, password, role){
+  async function register(name, email, password, role){
     const res = await fetch(BASE + '/auth/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password, role })
+      body: JSON.stringify({name, email, password, role })
     });
     if (!res.ok) throw await safeJson(res);
     return safeJson(res);

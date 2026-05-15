@@ -1,15 +1,15 @@
 const { getDB } = require('../controllers/db');
 
-function createUser({ email, password, role = 'student' }) {
+function createUser({name, email, password, role = 'student' }) {
   const db = getDB();
-  const stmt = db.prepare('INSERT INTO users (email, password, role) VALUES (?, ?, ?)');
-  const info = stmt.run(email, password, role);
-  return { id: info.lastInsertRowid, email, role };
+  const stmt = db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
+  const info = stmt.run(name, email, password, role);
+  return { id: info.lastInsertRowid, name, email, role};
 }
 
 function getUserById(id) {
   const db = getDB();
-  return db.prepare('SELECT id, email, role, created_at, updated_at FROM users WHERE id = ?').get(id);
+  return db.prepare('SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = ?').get(id);
 }
 
 function getUserByEmail(email) {
@@ -32,7 +32,7 @@ function deleteUser(id) {
 
 function listUsers() {
   const db = getDB();
-  return db.prepare('SELECT id, email, role, created_at FROM users ORDER BY id DESC').all();
+  return db.prepare('SELECT id, name, email, role, created_at FROM users ORDER BY id DESC').all();
 }
 
 module.exports = { createUser, getUserById, getUserByEmail, updateUser, deleteUser, listUsers };

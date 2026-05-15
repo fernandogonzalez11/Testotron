@@ -54,12 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = registerForm;
+      const name = form.querySelector('input[name="name"]').value.trim();
       const email = form.querySelector('input[name="email"]').value.trim();
       const password = form.querySelector('input[name="password"]').value.trim();
       const roleField = form.querySelector('select[name="role"]');
       const role = roleField ? roleField.value : 'student';
       try {
-        await window.apiClient.register(email, password, role);
+        await window.apiClient.register(name, email, password, role);
         window.location.href = '/auth/login';
       } catch (err) {
         console.error(err);

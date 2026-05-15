@@ -3,7 +3,6 @@ const router = express.Router();
 const { UserController } = require('../controllers/user');
 
 // POST /auth/register
-// body: { email, password, role }
 router.post('/register', UserController.register);
 
 // POST /auth/login

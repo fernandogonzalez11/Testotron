@@ -69,7 +69,10 @@ function baseContext(req, extra = {}) {
     const user = u ? {
         id: u.id,
         name: u.name || u.email || 'Usuario',
-        role: u.role || 'guest',
+        email: u.email,
+	role: u.role || 'guest',
+	bio: u.bio,
+	created_at: u.created_at,
         initials: (u.name || '').split(' ').map(s => s[0] || '').slice(0,2).join('').toUpperCase()
     } : { name: 'Invitado', role: 'guest', initials: '??' }; 
 

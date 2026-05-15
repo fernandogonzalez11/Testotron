@@ -4,15 +4,16 @@ const { createUser, getUserById, getUserByEmail, updateUser, deleteUser, listUse
 const { handleError } = require('./utils');
 const { generateToken } = require('../middleware/auth');
 
-const registerSchema = z.object({ email: z.string().email(), password: z.string().min(6), role: z.enum(['student','teacher','admin']).optional() });
-const updateSchema = z.object({ email: z.string().email().optional(), password: z.string().min(6).optional(), role: z.enum(['student','teacher','admin']).optional() });
+const registerSchema = z.object({ name: z.string().min(1), email: z.string().email(), password: z.string().min(6), role: z.enum(['student','teacher','admin']).optional() });
+
+const updateSchema = z.object({ name: z.string().min(1), email: z.string().email().optional(), password: z.string().min(6).optional(), role: z.enum(['student','teacher','admin']).optional() });
 
 class UserController {
   static async register(req, res) {
     try {
       const data = registerSchema.parse(req.body);
       const hashed = await bcrypt.hash(data.password, 10);
-      const user = createUser({ email: data.email, password: hashed, role: data.role });
+      const user = createUser({ name:data.name, email: data.email, password: hashed, role: data.role });
       res.status(201).json({ user });
     } catch (err) {
       handleError(err, res);
@@ -26,15 +27,14 @@ class UserController {
       if (!u) return res.status(401).json({ error: 'Invalid credentials' });
       const ok = await bcrypt.compare(body.password, u.password);
       if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-      const token = generateToken({ id: u.id, email: u.email, role: u.role });
-      // set HttpOnly cookie for SSR hydration (short-term compatibility)
+      const token = generateToken({id: u.id, email: u.email, name: u.name,role: u.role});
       res.cookie('token', token, {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 1000 * 60 * 60 * 24 * 7
       });
-      res.json({ token, user: { id: u.id, email: u.email, role: u.role } });
+      res.json({ token, user: { id: u.id, email: u.email, name: u.name, role: u.role } });
     } catch (err) {
       handleError(err, res);
     }
@@ -66,7 +66,7 @@ class UserController {
       const data = updateSchema.parse(req.body);
       let hashed;
       if (data.password) hashed = await bcrypt.hash(data.password, 10);
-      const changes = updateUser(id, { email: data.email, password: hashed, role: data.role });
+      const changes = updateUser(id, { name:date.name, email: data.email, password: hashed, role: data.role });
       res.json({ updated: changes });
     } catch (err) {
       handleError(err, res);

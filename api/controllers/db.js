@@ -24,8 +24,10 @@ function createSchema() {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
       password TEXT NOT NULL,
       role TEXT NOT NULL CHECK(role IN ('student','teacher','admin')) DEFAULT 'student',
+      bio TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
