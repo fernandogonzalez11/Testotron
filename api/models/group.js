@@ -4,16 +4,16 @@ function genCode() {
   return Math.random().toString(36).slice(2,10).toUpperCase();
 }
 
-function createGroup({ code, name }) {
+function createGroup({ code, name, owner_id }) {
   const db = getDB();
   const c = code || genCode();
-  db.prepare('INSERT INTO groups (code, name) VALUES (?, ?)').run(c, name);
-  return { code: c, name };
+  db.prepare('INSERT INTO groups (code, name, owner_id) VALUES (?, ?, ?)').run(c, name, owner_id);
+  return { code: c, name, owner_id };
 }
 
 function getGroup(code) {
   const db = getDB();
-  return db.prepare('SELECT code, name, created_at, updated_at FROM groups WHERE code = ?').get(code);
+  return db.prepare('SELECT code, name, owner_id, created_at, updated_at FROM groups WHERE code = ?').get(code);
 }
 
 function updateGroup(code, { name }) {
@@ -27,9 +27,10 @@ function deleteGroup(code) {
   return db.prepare('DELETE FROM groups WHERE code = ?').run(code).changes;
 }
 
-function listGroups() {
+function listGroups({ owner_id } = {}) {
   const db = getDB();
-  return db.prepare('SELECT code, name, created_at FROM groups ORDER BY created_at DESC').all();
+  if (owner_id) return db.prepare('SELECT code, name, owner_id, created_at FROM groups WHERE owner_id = ? ORDER BY created_at DESC').all(owner_id);
+  return db.prepare('SELECT code, name, owner_id, created_at FROM groups ORDER BY created_at DESC').all();
 }
 
 function addMember(group_code, user_id) {

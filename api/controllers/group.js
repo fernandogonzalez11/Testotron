@@ -8,7 +8,9 @@ class GroupController {
   static create(req, res) {
     try {
       const data = schemaCreate.parse(req.body);
-      const g = createGroup(data);
+      // enforce owner from auth
+      const owner_id = req.user && req.user.id;
+      const g = createGroup(Object.assign({}, data, { owner_id }));
       res.status(201).json({ group: g });
     } catch (err) {
       handleError(err, res);
@@ -19,6 +21,7 @@ class GroupController {
     try {
       const g = getGroup(req.params.code);
       if (!g) return res.status(404).json({ error: 'Not found' });
+      if (req.user.role === 'teacher' && g.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
       res.json({ group: g });
     } catch (err) {
       handleError(err, res);
@@ -29,12 +32,17 @@ class GroupController {
     try {
       const d = groupDetail(req.params.code);
       if (!d) return res.status(404).json({ error: 'Not found' });
+      if (req.user.role === 'teacher' && d.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
       res.json({ group: d });
     } catch (err) { handleError(err, res); }
   }
 
   static list(req, res) {
     try {
+      if (req.user.role === 'teacher') {
+        const gs = listGroups({ owner_id: req.user.id });
+        return res.json({ groups: gs });
+      }
       const gs = listGroups();
       res.json({ groups: gs });
     } catch (err) {

@@ -33,17 +33,21 @@ function createSchema() {
     CREATE TABLE IF NOT EXISTS groups (
       code TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      owner_id INTEGER,
       created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS tests (
       code TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      owner_id INTEGER,
       group_code TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY(group_code) REFERENCES groups(code) ON DELETE SET NULL
+      FOREIGN KEY(group_code) REFERENCES groups(code) ON DELETE SET NULL,
+      FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS templates (
@@ -86,6 +90,12 @@ function createSchema() {
       FOREIGN KEY(test_code) REFERENCES tests(code) ON DELETE CASCADE
     );
 
+    -- Indexes to speed ownership queries
+    CREATE INDEX IF NOT EXISTS idx_groups_owner ON groups(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_tests_owner ON tests(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_templates_owner ON templates(user_id);
+    CREATE INDEX IF NOT EXISTS idx_answers_user ON answers(user_id);
+
     CREATE TABLE IF NOT EXISTS answerxitem (
       answer_id INTEGER NOT NULL,
       item_id INTEGER NOT NULL,
@@ -110,7 +120,40 @@ function createSchema() {
     );
   `);
 
+  // Migration: add owner_id to existing tables if missing (preserve data)
+  try {
+    const adminRow = d.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+    let adminId = adminRow ? adminRow.id : null;
+    if (!adminId) {
+      // create a fallback admin
+      const bcrypt = require('bcrypt');
+      const pw = bcrypt.hashSync('admin', 10);
+      const info = d.prepare('INSERT INTO users (email, password, role) VALUES (?, ?, ?)').run('admin@local', pw, 'admin');
+      adminId = info.lastInsertRowid;
+    }
+
+    // groups.owner_id
+    const groupInfo = d.prepare("PRAGMA table_info('groups')").all();
+    if (!groupInfo.find(c => c.name === 'owner_id')) {
+      d.prepare('ALTER TABLE groups ADD COLUMN owner_id INTEGER').run();
+      d.prepare('UPDATE groups SET owner_id = ? WHERE owner_id IS NULL').run(adminId);
+    }
+
+    // tests.owner_id
+    const testInfo = d.prepare("PRAGMA table_info('tests')").all();
+    if (!testInfo.find(c => c.name === 'owner_id')) {
+      d.prepare('ALTER TABLE tests ADD COLUMN owner_id INTEGER').run();
+      d.prepare('UPDATE tests SET owner_id = ? WHERE owner_id IS NULL').run(adminId);
+    }
+
+    // ensure indexes exist (already created above via CREATE INDEX IF NOT EXISTS)
+  } catch (err) {
+    console.error('Migration warning: could not ensure ownership columns/indexes', err);
+  }
+
   return d;
 }
+
+module.exports = { initDB, getDB, createSchema };
 
 module.exports = { initDB, getDB, createSchema };

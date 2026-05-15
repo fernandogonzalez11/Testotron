@@ -33,8 +33,8 @@ function listAnswers(filters = {}) {
 
 function listResults(filters = {}) {
   const db = getDB();
-  // filters: student_email (partial), group_code, test_code
-  let q = `SELECT a.id as answer_id, u.id as student_id, u.email as student_email, t.code as test_code, t.name as test_name, t.group_code, a.created_at
+  // filters: student_email (partial), group_code, test_code, owner_id
+  let q = `SELECT a.id as answer_id, u.id as student_id, u.email as student_email, t.code as test_code, t.name as test_name, t.group_code, t.owner_id, a.created_at
     FROM answers a
     JOIN users u ON u.id = a.user_id
     JOIN tests t ON t.code = a.test_code
@@ -43,6 +43,7 @@ function listResults(filters = {}) {
   if (filters.student_email) { q += ' AND u.email LIKE ?'; params.push('%' + filters.student_email + '%'); }
   if (filters.group_code) { q += ' AND t.group_code = ?'; params.push(filters.group_code); }
   if (filters.test_code) { q += ' AND t.code = ?'; params.push(filters.test_code); }
+  if (filters.owner_id) { q += ' AND t.owner_id = ?'; params.push(filters.owner_id); }
   const rows = db.prepare(q).all(...params);
 
   // compute score for each answer
