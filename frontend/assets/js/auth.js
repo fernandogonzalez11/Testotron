@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const response = await window.apiClient.login(email, password);
+	const me = await window.apiClient.fetchCurrentUser();
         let role = response?.user?.role;
 
         if (!role) {

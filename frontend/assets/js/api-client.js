@@ -20,8 +20,9 @@
     const url = BASE + path;
     const headers = Object.assign({}, opts.headers || {});
     if (!headers['Content-Type'] && !(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
-    const token = getToken();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
+    // Prefer cookie-based auth. Do not send Authorization header by default to avoid
+    // conflicts between stored tokens and server HttpOnly cookie.
+    // If a client script explicitly calls setToken(), it can still be used by direct APIs.
     const res = await fetch(url, Object.assign({}, opts, { headers, credentials: 'include' }));
     if (!res.ok) {
       const body = await safeJson(res).catch(()=>null);
