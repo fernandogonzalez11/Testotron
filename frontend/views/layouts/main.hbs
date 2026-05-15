@@ -57,7 +57,15 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>window.__API_BASE__ = window.__API_BASE__ || (window.__env && window.__env.API_BASE) || 'http://localhost:8080';</script>
+    <script src="/assets/js/env.js"></script>
+    <script src="/assets/js/api-client.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/hydrate-user.js"></script>
+    <script src="/assets/js/logout.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/quick-access.js"></script>
+    <script src="/assets/js/teacher-quizzes.js" defer></script>
     {{{_sections.scripts}}}
 </body>
 </html>

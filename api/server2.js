@@ -36,11 +36,8 @@ app.get('/teacher/quizzes', (req, res) => {
             initials: "CM" 
         },
         activePage: { quizzes: true },
-        stats: { total: 6, active: 3, drafts: 2, totalResponses: 138 },
-        quizzes: [
-            { id: 1, title: "Matemáticas Avanzadas - Unidad 3", createdAt: "2026-03-15", group: "Ingeniería 2024", questions: 15, responses: 28, status: "active", code: "MAT-2024" },
-            { id: 2, title: "Historia Universal Contemporánea", createdAt: "2026-03-18", group: "Humanidades A", questions: 20, responses: 34, status: "active", code: "HIS-7832" }
-        ]
+        stats: { total: 0, active: 0, drafts: 0, totalResponses: 0 },
+        quizzes: []
     };
     res.render('teacher/quizzes', mockData);
 });
@@ -58,40 +55,7 @@ app.get('/teacher/templates', (req, res) => {
         "activePage": {
             "templates": true
         },
-        "templates": [
-            {
-            "id": 1,
-            "title": "Examen de Matemáticas",
-            "description": "Plantilla para evaluaciones de matemáticas con 20 preguntas",
-            "category": "Matemáticas",
-            "questions": 20,
-            "uses": 45
-            },
-            {
-            "id": 2,
-            "title": "Quiz de Historia",
-            "description": "Cuestionario básico de historia con preguntas de opción múltiple",
-            "category": "Historia",
-            "questions": 15,
-            "uses": 32
-            },
-            {
-            "id": 3,
-            "title": "Evaluación de Programación",
-            "description": "Plantilla técnica para evaluar conocimientos de programación",
-            "category": "Tecnología",
-            "questions": 25,
-            "uses": 67
-            },
-            {
-            "id": 4,
-            "title": "Test de Ciencias",
-            "description": "Plantilla general para ciencias naturales",
-            "category": "Ciencias",
-            "questions": 18,
-            "uses": 28
-            }
-        ]
+        "templates": []
     };
     res.render('teacher/templates', mockData);
 });
@@ -112,44 +76,8 @@ app.get('/teacher/questions', (req, res) => {
         "filters": {
             "search": ""
         },
-        "stats": {
-            "totalQuestions": 4,
-            "mostUsed": 15
-        },
-        "questions": [
-            {
-            "id": 1,
-            "question": "¿Cuál es la derivada de x²?",
-            "type": "Opción múltiple",
-            "difficulty": "Fácil",
-            "difficultyVariant": "success",
-            "uses": 12
-            },
-            {
-            "id": 2,
-            "question": "¿En qué año comenzó la Segunda Guerra Mundial?",
-            "type": "Respuesta corta",
-            "difficulty": "Media",
-            "difficultyVariant": "warning",
-            "uses": 8
-            },
-            {
-            "id": 3,
-            "question": "¿Qué es una función pura en programación?",
-            "type": "Opción múltiple",
-            "difficulty": "Difícil",
-            "difficultyVariant": "danger",
-            "uses": 5
-            },
-            {
-            "id": 4,
-            "question": "¿Cuál es la fórmula química del agua?",
-            "type": "Respuesta corta",
-            "difficulty": "Fácil",
-            "difficultyVariant": "success",
-            "uses": 15
-            }
-        ],
+        "stats": { "totalQuestions": 0, "mostUsed": 0 },
+        "questions": [],
         "questionForm": {
             types: ["Selección única", "Selección múltiple", "Respuesta corta"],
             categories: ["Matemáticas", "Historia", "Ciencias"],
@@ -180,7 +108,7 @@ app.get('/teacher/quizzes/create', (req, res) => {
     },
     activePage: { createQuiz: true },
     categories: ["Matemáticas", "Historia", "Ciencias"],
-    groups: ["Crear como plantilla", "Ingeniería 2024", "Humanidades A"],
+    groups: [],
     difficulties: ["Fácil", "Media", "Difícil"],
     quiz: {
       name: "",
@@ -234,16 +162,7 @@ app.get('/teacher/quizzes/view/:id', (req, res) => {
       approvalRate: 75.0,
       totalAttempts: 10
     },
-    results: [
-      { student: "Ana García Martínez", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "87%", status: "Aprobado", date: "2026-04-05", time: "24:35" },
-      { student: "Carlos López Ramírez", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "92%", status: "Aprobado", date: "2026-04-05", time: "22:10" },
-      { student: "María Fernández Soto", quiz: "Historia Universal Contemporánea", group: "Humanidades A", score: "65%", status: "Reprobado", date: "2026-04-04", time: "28:45" },
-      { student: "Juan Pérez González", quiz: "Programación Web - React", group: "Desarrollo Web", score: "95%", status: "Aprobado", date: "2026-04-05", time: "30:20" },
-      { student: "Laura Sánchez Torres", quiz: "Química Orgánica - Parcial 1", group: "Ciencias Naturales", score: "78%", status: "Aprobado", date: "2026-04-03", time: "35:11" },
-      { student: "Pedro Martínez Ruiz", quiz: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", score: "58%", status: "Reprobado", date: "2026-04-04", time: "30:00" },
-      { student: "Sofía Rodríguez Díaz", quiz: "Historia Universal Contemporánea", group: "Humanidades A", score: "88%", status: "Aprobado", date: "2026-04-04", time: "26:34" },
-      { student: "Diego Hernández Luna", quiz: "Programación Web - React", group: "Desarrollo Web", score: "72%", status: "Aprobado", date: "2026-04-03", time: "29:55" }
-    ]
+    results: []
   };
   res.render('teacher/results', mockData);
 });
@@ -266,36 +185,7 @@ app.get('/admin/tables', (req, res) => {
             admins: 5, 
             activityToday: 127 
         },
-        tables: [
-            {
-                name: "Usuarios",
-                headers: ["Usuario", "Email", "Rol", "Estado", "Registro"],
-                rows: [
-                    { Usuario: "Ana García", Email: "ana@mail.com", Rol: "student", Estado: "active", Registro: "2026-01-15" },
-                    { Usuario: "Carlos Mendoza", Email: "carlos@mail.com", Rol: "teacher", Estado: "active", Registro: "2026-01-10" },
-                    { Usuario: "María López", Email: "maria@mail.com", Rol: "student", Estado: "active", Registro: "2026-02-01" }
-                ],
-                actions: [
-                    { label: "Editar", icon: "bi-pencil", url: "/admin/users/edit/{{id}}", color: "primary" }
-                ]
-            },
-            {
-                name: "Grupos",
-                headers: ["Nombre", "Miembros", "Creación", "Estado"],
-                rows: [
-                    { Nombre: "Ingeniería 2024", Miembros: 32, Creación: "2025-09-01", Estado: "active" },
-                    { Nombre: "Humanidades A", Miembros: 28, Creación: "2025-10-12", Estado: "active" }
-                ]
-            },
-            {
-                name: "Cuestionarios y plantillas",
-                headers: ["Título", "Código", "Creación", "Preguntas", "Estado"],
-                rows: [
-                    { Título: "Matemáticas Avanzadas - Unidad 3", Código: "MAT-2024", Creación: "2026-03-15", Preguntas: 15, Estado: "active" },
-                    { Título: "Historia Universal Contemporánea", Código: "HIS-7832", Creación: "2026-03-18", Preguntas: 20, Estado: "active" }
-                ]
-            }
-        ]
+        tables: []
     };
     res.render('admin/tables', mockData);
 });
@@ -350,14 +240,7 @@ app.get('/student/quizzes', (req, res) => {
       pending: 3,
       averageScore: 82.3
     },
-    quizzes: [
-      { title: "Matemáticas Avanzadas - Unidad 3", group: "Ingeniería 2024", questions: 15, timeLimit: 30, dueDate: "2026-04-10", attempts: "1/2", score: "87%", canRetry: true },
-      { title: "Historia Universal Contemporánea", group: "Humanidades A", questions: 20, timeLimit: 45, dueDate: "2026-04-12", attempts: "0/1", score: null, canRetry: false },
-      { title: "Programación Web - React", group: "Desarrollo Web", questions: 25, timeLimit: 60, dueDate: "2026-04-15", attempts: "1/3", score: "95%", canRetry: true },
-      { title: "Química Orgánica - Parcial 1", group: "Ciencias Naturales", questions: 30, timeLimit: 40, dueDate: "2026-04-08", attempts: "0/1", score: null, canRetry: false },
-      { title: "Física Mecánica - Dinámica", group: "Física Aplicada", questions: 22, timeLimit: 35, dueDate: "2026-04-05", attempts: "2/2", score: "65%", canRetry: false },
-      { title: "Literatura Latinoamericana", group: "Letras B", questions: 18, timeLimit: 18, dueDate: "2026-04-20", attempts: "0/1", score: null, canRetry: false }
-    ]
+    quizzes: []
   };
   res.render('student/quizzes', mockData);
 });
@@ -380,78 +263,7 @@ app.get('/student/quiz/:id', (req, res) => {
             "current": 0,
             "total": 7
         },
-        "questions": [
-            {
-            "id": 1,
-            "text": "¿Cuál es la derivada de la función f(x) = x²?",
-            "options": [
-                { "id": "a", "text": "2x" },
-                { "id": "b", "text": "x" },
-                { "id": "c", "text": "2" },
-                { "id": "d", "text": "x²" }
-            ]
-            },
-            {
-            "id": 2,
-            "text": "¿Cuál es el límite de f(x) = 1/x cuando x tiende a infinito?",
-            "options": [
-                { "id": "a", "text": "0" },
-                { "id": "b", "text": "1" },
-                { "id": "c", "text": "Infinito" },
-                { "id": "d", "text": "No existe" }
-            ]
-            },
-            {
-            "id": 3,
-            "text": "¿Cuál es la integral de f(x) = 2x?",
-            "options": [
-                { "id": "a", "text": "x² + C" },
-                { "id": "b", "text": "2x²" },
-                { "id": "c", "text": "x²" },
-                { "id": "d", "text": "2x + C" }
-            ]
-            },
-            {
-            "id": 4,
-            "text": "¿Cuál es la integral de f(x) = 2x?",
-            "options": [
-                { "id": "a", "text": "x² + C" },
-                { "id": "b", "text": "2x²" },
-                { "id": "c", "text": "x²" },
-                { "id": "d", "text": "2x + C" }
-            ]
-            },
-            {
-            "id": 5,
-            "text": "¿Cuál es la integral de f(x) = 2x?",
-            "options": [
-                { "id": "a", "text": "x² + C" },
-                { "id": "b", "text": "2x²" },
-                { "id": "c", "text": "x²" },
-                { "id": "d", "text": "2x + C" }
-            ]
-            },
-            {
-            "id": 6,
-            "text": "¿Cuál es la integral de f(x) = 2x?",
-            "options": [
-                { "id": "a", "text": "x² + C" },
-                { "id": "b", "text": "2x²" },
-                { "id": "c", "text": "x²" },
-                { "id": "d", "text": "2x + C" }
-            ]
-            },
-            {
-            "id": 7,
-            "text": "¿Cuál es la integral de f(x) = 2x?",
-            "options": [
-                { "id": "a", "text": "x² + C" },
-                { "id": "b", "text": "2x²" },
-                { "id": "c", "text": "x²" },
-                { "id": "d", "text": "2x + C" }
-            ]
-            }
-        ],
+        "questions": [],
         "layout": "quiz"
     };
     res.render('student/quiz', mockData);
@@ -597,40 +409,7 @@ app.get('/groups', (req, res) => {
             averageStudents: 36
         },
 
-        groups: [
-            {
-                id: 1,
-                name: "Ingeniería 2024",
-                code: "ING2024",
-                students: 42,
-                quizzes: 8,
-                createdAt: "2026-01-15"
-            },
-            {
-                id: 2,
-                name: "Humanidades A",
-                code: "HUM-A24",
-                students: 35,
-                quizzes: 5,
-                createdAt: "2026-01-20"
-            },
-            {
-                id: 3,
-                name: "Desarrollo Web",
-                code: "WEB2024",
-                students: 28,
-                quizzes: 12,
-                createdAt: "2026-02-01"
-            },
-            {
-                id: 4,
-                name: "Ciencias Naturales",
-                code: "CNAT24",
-                students: 38,
-                quizzes: 6,
-                createdAt: "2026-02-10"
-            }
-        ]
+        groups: []
     };
 
     res.render('shared/groups', mockData);
@@ -675,9 +454,9 @@ app.get('/auth/login', (req, res) => {
         appName: "Testotron",
         pageTitle: "Iniciar sesión",
         appSlogan: "Gestiona cuestionarios de forma rápida, clara y organizada",
-        authAction: "/auth/login",
-        registerUrl: "/auth/register",
-        quickAccessAction: "/quizzes/join",
+        authAction: '/auth/login',
+        registerUrl: '/auth/register',
+        quickAccessAction: '/quizzes/join',
         placeholders: {
             email: "tu@email.com",
             password: "********",
@@ -695,9 +474,9 @@ app.get('/auth/register', (req, res) => {
         pageTitle: "Crear cuenta",
         appName: "Testotron",
         appSlogan: "Gestiona cuestionarios de forma rápida, clara y organizada",
-        authAction: "/auth/register",
-        loginUrl: "/auth/login",
-        quickAccessAction: "/quizzes/join",
+        authAction: '/auth/register',
+        loginUrl: '/auth/login',
+        quickAccessAction: '/quizzes/join',
         roles: [
             { "value": "student", "label": "Estudiante" },
             { "value": "teacher", "label": "Profesor" }
@@ -737,5 +516,5 @@ app.get('/', (req, res) => {
     res.redirect('/auth/login');
 })
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Testotron corriendo en http://localhost:${PORT}`));
+const PORT = process.env.FRONTEND_PORT || 3001;
+app.listen(PORT, () => console.log(`Frontend (server2) corriendo en http://localhost:${PORT}`));

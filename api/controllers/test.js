@@ -1,5 +1,7 @@
 const { z } = require('zod');
 const { createTest, getTest, updateTest, deleteTest, listTests } = require('../models/test');
+const { listSections } = require('../models/section');
+const { listItems } = require('../models/item');
 const { handleError } = require('./utils');
 
 const schemaCreate = z.object({ name: z.string().min(1), code: z.string().optional(), group_code: z.string().optional() });
@@ -52,6 +54,22 @@ class TestController {
       handleError(err, res);
     }
   }
+
+  // aggregated detail: test + sections + items
+  static detail(req, res) {
+    try {
+      const code = req.params.code;
+      const t = getTest(code);
+      if (!t) return res.status(404).json({ error: 'Not found' });
+      const sections = listSections(code);
+      const sectionsWithItems = sections.map(s => {
+        const items = listItems(s.id);
+        return Object.assign({}, s, { items });
+      });
+      res.json({ test: t, sections: sectionsWithItems });
+    } catch (err) { handleError(err, res); }
+  }
 }
 
+module.exports = { TestController };
 module.exports = { TestController };

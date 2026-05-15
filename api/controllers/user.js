@@ -27,6 +27,13 @@ class UserController {
       const ok = await bcrypt.compare(body.password, u.password);
       if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
       const token = generateToken({ id: u.id, email: u.email, role: u.role });
+      // set HttpOnly cookie for SSR hydration (short-term compatibility)
+      res.cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 24 * 7
+      });
       res.json({ token, user: { id: u.id, email: u.email, role: u.role } });
     } catch (err) {
       handleError(err, res);

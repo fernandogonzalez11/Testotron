@@ -17,10 +17,26 @@
         .btn-success { background-color: var(--color-success); border-color: var(--color-success); }
     </style>
 </head>
+
 <body>
+
     <main class="auth-container" id="main-content">
         {{{body}}}
         {{> quick-access}}
     </main>
+
+    <!-- API Config -->
+    <script>
+        window.__API_BASE__ =
+            window.__API_BASE__ ||
+            (window.__env && window.__env.API_BASE) ||
+            'http://localhost:8080';
+    </script>
+
+    <!-- Scripts -->
+    <script src="/assets/js/env.js"></script>
+    <script src="/assets/js/api-client.js"></script>
+    <script src="/assets/js/auth.js"></script>
+
 </body>
 </html>
