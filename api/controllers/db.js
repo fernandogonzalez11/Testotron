@@ -65,9 +65,11 @@ function createSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       test_code TEXT NOT NULL,
+      created_by INTEGER,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY(test_code) REFERENCES tests(code) ON DELETE CASCADE
+      FOREIGN KEY(test_code) REFERENCES tests(code) ON DELETE CASCADE,
+      FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS items (
@@ -77,9 +79,11 @@ function createSchema() {
       type TEXT NOT NULL,
       pts INTEGER DEFAULT 1,
       section_id INTEGER NOT NULL,
+      created_by INTEGER,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY(section_id) REFERENCES sections(id) ON DELETE CASCADE
+      FOREIGN KEY(section_id) REFERENCES sections(id) ON DELETE CASCADE,
+      FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS answers (
@@ -146,6 +150,24 @@ function createSchema() {
     if (!testInfo.find(c => c.name === 'owner_id')) {
       d.prepare('ALTER TABLE tests ADD COLUMN owner_id INTEGER').run();
       d.prepare('UPDATE tests SET owner_id = ? WHERE owner_id IS NULL').run(adminId);
+    }
+
+    // sections.created_by
+    const sectionInfo = d.prepare("PRAGMA table_info('sections')").all();
+    if (!sectionInfo.find(c => c.name === 'created_by')) {
+      try {
+        d.prepare('ALTER TABLE sections ADD COLUMN created_by INTEGER').run();
+        d.prepare('UPDATE sections SET created_by = ? WHERE created_by IS NULL').run(adminId);
+      } catch (e) { /* ignore */ }
+    }
+
+    // items.created_by
+    const itemInfo = d.prepare("PRAGMA table_info('items')").all();
+    if (!itemInfo.find(c => c.name === 'created_by')) {
+      try {
+        d.prepare('ALTER TABLE items ADD COLUMN created_by INTEGER').run();
+        d.prepare('UPDATE items SET created_by = ? WHERE created_by IS NULL').run(adminId);
+      } catch (e) { /* ignore */ }
     }
 
     // ensure indexes exist (already created above via CREATE INDEX IF NOT EXISTS)

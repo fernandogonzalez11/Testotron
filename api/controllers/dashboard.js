@@ -11,8 +11,8 @@ async function getDashboard(req, res) {
 
     // role-specific breakdowns
     if (req.user && req.user.role === 'teacher') {
-      // simple teacher view: tests and responses
-      const tests = db.prepare('SELECT code, name, group_code FROM tests').all();
+      // teacher view: only their tests
+      const tests = db.prepare('SELECT code, name, group_code FROM tests WHERE owner_id = ?').all(req.user.id);
       return res.json({ totalUsers, totalGroups, totalTests, totalAnswers, tests });
     }
 

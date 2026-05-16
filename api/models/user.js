@@ -9,7 +9,7 @@ function createUser({name, email, password, role = 'student' }) {
 
 function getUserById(id) {
   const db = getDB();
-  return db.prepare('SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = ?').get(id);
+  return db.prepare('SELECT id, name, email, role, password, bio, created_at, updated_at FROM users WHERE id = ?').get(id);
 }
 
 function getUserByEmail(email) {
@@ -17,10 +17,10 @@ function getUserByEmail(email) {
   return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 }
 
-function updateUser(id, { email, password, role }) {
+function updateUser(id, { name, email, password, role, bio }) {
   const db = getDB();
-  const stmt = db.prepare('UPDATE users SET email = COALESCE(?, email), password = COALESCE(?, password), role = COALESCE(?, role), updated_at = datetime(\'now\') WHERE id = ?');
-  const info = stmt.run(email, password, role, id);
+  const stmt = db.prepare("UPDATE users SET name = COALESCE(?, name), email = COALESCE(?, email), password = COALESCE(?, password), role = COALESCE(?, role), bio = COALESCE(?, bio), updated_at = datetime('now') WHERE id = ?");
+  const info = stmt.run(name, email, password, role, bio, id);
   return info.changes;
 }
 

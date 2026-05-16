@@ -8,7 +8,8 @@ class SectionController {
   static create(req, res) {
     try {
       const data = schema.parse(req.body);
-      const s = createSection(data);
+      const created_by = req.user && req.user.id;
+      const s = createSection(Object.assign({}, data, { created_by }));
       res.status(201).json({ section: s });
     } catch (err) { handleError(err, res); }
   }

@@ -8,7 +8,8 @@ class ItemController {
   static create(req, res) {
     try {
       const data = schema.parse(req.body);
-      const it = createItem(data);
+      const created_by = req.user && req.user.id;
+      const it = createItem(Object.assign({}, data, { created_by }));
       res.status(201).json({ item: it });
     } catch (err) { handleError(err, res); }
   }

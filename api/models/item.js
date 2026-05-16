@@ -1,9 +1,9 @@
 const { getDB } = require('../controllers/db');
 
-function createItem({ question, answer, type, pts = 1, section_id }) {
+function createItem({ question, answer, type, pts = 1, section_id, created_by = null }) {
   const db = getDB();
-  const info = db.prepare('INSERT INTO items (question, answer, type, pts, section_id) VALUES (?, ?, ?, ?, ?)').run(question, answer, type, pts, section_id);
-  return { id: info.lastInsertRowid, question, answer, type, pts, section_id };
+  const info = db.prepare('INSERT INTO items (question, answer, type, pts, section_id, created_by) VALUES (?, ?, ?, ?, ?, ?)').run(question, answer, type, pts, section_id, created_by);
+  return { id: info.lastInsertRowid, question, answer, type, pts, section_id, created_by };
 }
 
 function getItem(id) { return getDB().prepare('SELECT * FROM items WHERE id = ?').get(id); }

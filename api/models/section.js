@@ -1,9 +1,9 @@
 const { getDB } = require('../controllers/db');
 
-function createSection({ name, test_code }) {
+function createSection({ name, test_code, created_by = null }) {
   const db = getDB();
-  const info = db.prepare('INSERT INTO sections (name, test_code) VALUES (?, ?)').run(name, test_code);
-  return { id: info.lastInsertRowid, name, test_code };
+  const info = db.prepare('INSERT INTO sections (name, test_code, created_by) VALUES (?, ?, ?)').run(name, test_code, created_by);
+  return { id: info.lastInsertRowid, name, test_code, created_by };
 }
 
 function getSection(id) {

@@ -6,7 +6,7 @@ const { generateToken } = require('../middleware/auth');
 
 const registerSchema = z.object({ name: z.string().min(1), email: z.string().email(), password: z.string().min(6), role: z.enum(['student','teacher','admin']).optional() });
 
-const updateSchema = z.object({ name: z.string().min(1), email: z.string().email().optional(), password: z.string().min(6).optional(), role: z.enum(['student','teacher','admin']).optional() });
+const updateSchema = z.object({ name: z.string().min(1).optional(), email: z.string().email().optional(), password: z.string().min(6).optional(), role: z.enum(['student','teacher','admin']).optional(), bio: z.string().optional() });
 
 class UserController {
   static async register(req, res) {
@@ -64,9 +64,12 @@ class UserController {
     try {
       const id = Number(req.params.id);
       const data = updateSchema.parse(req.body);
+      // enforce non-admins can only update their own profile
+      if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+      if (req.user.role !== 'admin' && req.user.id !== id) return res.status(403).json({ error: 'Forbidden' });
       let hashed;
       if (data.password) hashed = await bcrypt.hash(data.password, 10);
-      const changes = updateUser(id, { name:date.name, email: data.email, password: hashed, role: data.role });
+      const changes = updateUser(id, { name: data.name, email: data.email, password: hashed, role: data.role, bio: data.bio });
       res.json({ updated: changes });
     } catch (err) {
       handleError(err, res);
