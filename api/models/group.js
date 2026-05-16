@@ -4,11 +4,11 @@ function genCode() {
   return Math.random().toString(36).slice(2,10).toUpperCase();
 }
 
-function createGroup({ code, name, owner_id }) {
+function createGroup({ code, name, owner_id, description }) {
   const db = getDB();
   const c = code || genCode();
-  db.prepare('INSERT INTO groups (code, name, owner_id) VALUES (?, ?, ?)').run(c, name, owner_id);
-  return { code: c, name, owner_id };
+  db.prepare('INSERT INTO groups (code, name, owner_id, description) VALUES (?, ?, ?, ?)').run(c, name, owner_id, description);
+  return { code: c, name, owner_id, description };
 }
 
 function getGroup(code) {
@@ -50,7 +50,7 @@ function listMembers(group_code) {
 
 function groupDetail(code) {
   const db = getDB();
-  const g = db.prepare('SELECT code, name, created_at, updated_at FROM groups WHERE code = ?').get(code);
+  const g = db.prepare('SELECT * FROM groups WHERE code = ?').get(code);
   if (!g) return null;
   const members = listMembers(code);
   const quizzes = db.prepare('SELECT code, name FROM tests WHERE group_code = ?').all(code);

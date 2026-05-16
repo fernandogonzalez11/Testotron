@@ -23,7 +23,7 @@ const { authMiddleware } = require('./middleware/auth');
 const { listSections } = require('./models/section');
 const { listItems } = require('./models/item');
 const { listAnswers, listResults, getAnswer } = require('./models/answer');
-const { listGroups, groupDetail } = require('./models/group');
+const { listGroups, groupDetail, createGroup} = require('./models/group');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -64,14 +64,14 @@ const logoutRoutes = require('./routes/logout');
 app.use('/logout', logoutRoutes);
 
 // protected/resource routes
-app.use('/users', userRoutes);
-app.use('/groups', groupRoutes);
-app.use('/tests', testRoutes);
-app.use('/sections', sectionRoutes);
-app.use('/items', itemRoutes);
-app.use('/templates', templateRoutes);
-app.use('/answers', answerRoutes);
-app.use('/dashboard', dashboardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/tests', testRoutes);
+app.use('/api/sections', sectionRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/answers', answerRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const APP_NAME = process.env.APP_NAME || 'Testotron';
 
@@ -330,41 +330,283 @@ app.get('/admin/tables', (req, res) => {
     res.render('admin/tables', ctx);
 });
 
+
 app.get('/groups', (req, res) => {
-    if (!req.user) return res.redirect('/auth/login');
-    const db = require('./controllers/db').getDB();
-    let groups = [];
-    if (req.user.role === 'teacher') {
-      groups = listGroups({ owner_id: req.user.id });
-    } else if (req.user.role === 'student') {
-      groups = db.prepare('SELECT g.code, g.name, g.owner_id FROM user_groups ug JOIN groups g ON g.code = ug.group_code WHERE ug.user_id = ?').all(req.user.id);
-    } else if (req.user.role === 'admin') {
-      groups = listGroups();
+
+    if (!req.user) {
+        return res.redirect('/auth/login');
     }
-    const stats = { totalGroups: groups.length, totalStudents: 0, assignedQuizzes: 0, averageStudents: 0 };
-    const ctx = baseContext(req, { pageTitle: 'Mis grupos', active: { groups: true }, locals: {
-        pageDescription: 'Organiza estudiantes y asigna cuestionarios',
-        filters: { search: '' },
-        stats,
-        groups
-    }});
+
+    // show success/error messages from query params
+    const successMessage =
+        req.query && req.query.success
+            ? decodeURIComponent(req.query.success)
+            : null;
+
+    const errorMessage =
+        req.query && req.query.error
+            ? decodeURIComponent(req.query.error)
+            : null;
+
+    let groups = [];
+
+    // =========================
+    // TEACHER -> own groups
+    // =========================
+    if (req.user.role === 'teacher') {
+
+        groups = listGroups({
+            owner_id: req.user.id
+        });
+
+    }
+
+    // =========================
+    // STUDENT -> joined groups
+    // =========================
+    else if (req.user.role === 'student') {
+
+        const db = require('./controllers/db').getDB();
+
+        const memberships = db.prepare(`
+            SELECT group_code
+            FROM user_groups
+            WHERE user_id = ?
+        `).all(req.user.id);
+
+        groups = memberships
+            .map(m => groupDetail(m.group_code))
+            .filter(Boolean);
+
+    }
+
+    // =========================
+    // ADMIN -> all groups
+    // =========================
+    else if (req.user.role === 'admin') {
+
+        groups = listGroups();
+
+    }
+
+    // =========================
+    // ENRICH GROUPS WITH STATS
+    // =========================
+    groups = groups.map(g => {
+
+        const detail = groupDetail(g.code);
+
+        return {
+            code: g.code,
+            name: g.name,
+            owner_id: g.owner_id,
+            created_at: g.created_at,
+
+            students_count:
+                detail?.members?.length || 0,
+
+            quizzes_count:
+                detail?.quizzes?.length || 0,
+
+            avg_score:
+                detail?.avg_score || 0,
+
+            members:
+                detail?.members || [],
+
+            quizzes:
+                detail?.quizzes || []
+        };
+    });
+
+    // =========================
+    // GLOBAL STATS
+    // =========================
+    const totalStudents =
+        groups.reduce(
+            (sum, g) =>
+                sum + (g.students_count || 0),
+            0
+        );
+
+    const assignedQuizzes =
+        groups.reduce(
+            (sum, g) =>
+                sum + (g.quizzes_count || 0),
+            0
+        );
+
+    const avgStudents =
+        groups.length
+            ? Math.round(
+                totalStudents / groups.length
+            )
+            : 0;
+
+    const stats = {
+        totalGroups: groups.length,
+        totalStudents,
+        assignedQuizzes,
+        averageStudents: avgStudents
+    };
+
+    // =========================
+    // SEARCH FILTER
+    // =========================
+    const search =
+        String(req.query.search || '')
+            .trim()
+            .toLowerCase();
+
+    if (search) {
+
+        groups = groups.filter(g =>
+            g.name
+                ?.toLowerCase()
+                .includes(search)
+        );
+    }
+
+    // =========================
+    // RENDER PAGE
+    // =========================
+    const ctx = baseContext(req, {
+
+        pageTitle: 'Mis grupos',
+
+        active: {
+            groups: true
+        },
+
+        locals: {
+
+            pageDescription:
+                'Organiza estudiantes y asigna cuestionarios',
+
+            filters: {
+                search
+            },
+
+            stats,
+
+            groups,
+
+            successMessage,
+
+            errorMessage
+        }
+    });
+
     res.render('shared/groups', ctx);
 });
 
-app.get('/groups/:id', (req, res) => {
-    if (!req.user) return res.redirect('/auth/login');
-    const code = req.params.id;
-    const g = groupDetail(code);
-    if (!g) return res.status(404).render('shared/error', { message: 'Grupo no encontrado' });
-    // permissions: teacher must be owner; student must be member; admin allowed
-    if (req.user.role === 'teacher' && g.owner_id !== req.user.id) return res.status(403).render('shared/error', { message: 'Acceso denegado' });
-    if (req.user.role === 'student') {
-      const db = require('./controllers/db').getDB();
-      const m = db.prepare('SELECT 1 FROM user_groups ug WHERE ug.user_id = ? AND ug.group_code = ?').get(req.user.id, code);
-      if (!m) return res.status(403).render('shared/error', { message: 'Acceso denegado' });
+
+app.post('/groups/create', authMiddleware, (req, res) => {
+    try {
+        if (!req.user) {
+            return res.redirect('/auth/login');
+        }
+
+        createGroup({
+            name: req.body.name,
+            owner_id: req.user.id,
+            description: req.body.description
+	});
+
+        return res.redirect('/groups?created=1');
+
+    } catch (err) {
+        console.error(err);
+
+        return res.redirect(
+            '/groups?error=' +
+            encodeURIComponent('No se pudo crear el grupo')
+        );
     }
-    const ctx = baseContext(req, { pageTitle: g.name || 'Grupo', locals: { group: g }});
-    res.render('shared/group-info', ctx);
+});
+
+
+app.get('/groups/:id', (req, res) => {
+
+    if (!req.user) {
+        return res.redirect('/auth/login');
+    }
+
+    const code = req.params.id;
+
+    const group = groupDetail(code);
+
+    // GROUP NOT FOUND
+
+    if (!group) {
+
+        return res.redirect(
+            '/groups?error=' +
+            encodeURIComponent('Grupo no encontrado')
+        );
+    }
+
+    // TEACHER:
+    // only owner can access
+
+    if (
+        req.user.role === 'teacher' &&
+        group.owner_id !== req.user.id
+    ) {
+
+        return res.redirect(
+            '/groups?error=' +
+            encodeURIComponent('Acceso denegado')
+        );
+    }
+
+    // STUDENT:
+    // must belong to group
+
+    if (req.user.role === 'student') {
+
+        const member = group.members.find(
+            m => m.id === req.user.id
+        );
+
+        if (!member) {
+
+            return res.redirect(
+                '/groups?error=' +
+                encodeURIComponent('Acceso denegado')
+            );
+        }
+    }
+
+    // EXTRA COMPUTED DATA
+
+    group.membersCount =
+        group.members?.length || 0;
+
+    group.quizzesCount =
+        group.quizzes?.length || 0;
+
+    group.avg_score =
+        group.avg_score || 0;
+
+    const ctx = baseContext(req, {
+
+        pageTitle:
+            group.name || 'Grupo',
+
+        active: {
+            groups: true
+        },
+
+        locals: {
+            group
+        }
+    });
+
+    return res.render(
+        'shared/group-info',
+        ctx
+    );
 });
 
 app.get('/profile', (req, res) => {

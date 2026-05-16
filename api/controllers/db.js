@@ -36,6 +36,7 @@ function createSchema() {
       code TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       owner_id INTEGER,
+      description TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE SET NULL

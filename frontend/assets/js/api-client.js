@@ -69,23 +69,23 @@
   // Tests
   async function fetchTests(query=''){
     const q = query ? ('?' + query) : '';
-    return fetchWithAuth('/tests' + q);
+    return fetchWithAuth('/api/tests' + q);
   }
-  async function getTest(code){ return fetchWithAuth('/tests/' + encodeURIComponent(code)); }
+  async function getTest(code){ return fetchWithAuth('/api/tests/' + encodeURIComponent(code)); }
 
   // Sections & items
-  async function fetchSections(testCode){ return fetchWithAuth('/sections?test=' + encodeURIComponent(testCode)); }
-  async function fetchItems(sectionId){ return fetchWithAuth('/items?section=' + encodeURIComponent(sectionId)); }
+  async function fetchSections(testCode){ return fetchWithAuth('/api/sections?test=' + encodeURIComponent(testCode)); }
+  async function fetchItems(sectionId){ return fetchWithAuth('/api/items?section=' + encodeURIComponent(sectionId)); }
 
   // Create
-  async function createTest(payload){ return fetchWithAuth('/tests', { method: 'POST', body: JSON.stringify(payload) }); }
-  async function createSection(payload){ return fetchWithAuth('/sections', { method: 'POST', body: JSON.stringify(payload) }); }
-  async function createItem(payload){ return fetchWithAuth('/items', { method: 'POST', body: JSON.stringify(payload) }); }
+  async function createTest(payload){ return fetchWithAuth('/api/tests', { method: 'POST', body: JSON.stringify(payload) }); }
+  async function createSection(payload){ return fetchWithAuth('/api/sections', { method: 'POST', body: JSON.stringify(payload) }); }
+  async function createItem(payload){ return fetchWithAuth('/api/items', { method: 'POST', body: JSON.stringify(payload) }); }
 
   // Answers
-  async function submitAnswers(payload){ return fetchWithAuth('/answers', { method: 'POST', body: JSON.stringify(payload) }); }
-  async function getAnswer(id){ return fetchWithAuth('/answers/' + encodeURIComponent(id)); }
-  async function listAnswers(query=''){ const q = query ? ('?' + query) : ''; return fetchWithAuth('/answers' + q); }
+  async function submitAnswers(payload){ return fetchWithAuth('/api/answers', { method: 'POST', body: JSON.stringify(payload) }); }
+  async function getAnswer(id){ return fetchWithAuth('/api/answers/' + encodeURIComponent(id)); }
+  async function listAnswers(query=''){ const q = query ? ('?' + query) : ''; return fetchWithAuth('/api/answers' + q); }
 
   // Expose
   window.apiClient = {
