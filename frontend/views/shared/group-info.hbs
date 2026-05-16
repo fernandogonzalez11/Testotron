@@ -1,7 +1,7 @@
 <main id="main-content" class="container-fluid py-4" role="main">
   <header class="mb-4">
     <h1 class="h3 fw-bold">{{group.name}}</h1>
-    <p class="text-muted">Código de acceso: {{group.accessCode}}</p>
+    <p class="text-muted">Código de acceso: {{group.code}}</p>
   </header>
 
   <!-- Estadísticas -->
@@ -34,7 +34,7 @@
       <article class="card border-0 shadow-sm h-100">
         <div class="card-body">
           <p class="text-muted small mb-2">Código de acceso</p>
-          <p class="h3 fw-bold mb-0">{{group.accessCode}}</p>
+          <p class="h3 fw-bold mb-0">{{group.code}}</p>
         </div>
       </article>
     </div>
@@ -42,10 +42,100 @@
 
   <!-- Miembros -->
   <section class="card border-0 shadow-sm mb-4" aria-label="Miembros del grupo">
-    <div class="card-header">
-      <h2 class="h5 mb-0">Miembros</h2>
+	  
+	<div class="card-header d-flex justify-content-between align-items-center">
+  <h2 class="h5 mb-0">Miembros</h2>
+
+  {{#ifEquals user.role "teacher"}}
+    <button
+      class="btn btn-sm btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#addUserModal"
+    >
+      <i class="bi bi-plus-lg me-1"></i>
+      Incluir usuario
+    </button>
+  {{/ifEquals}}
+
+  {{#ifEquals user.role "admin"}}
+    <button
+      class="btn btn-sm btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#addUserModal"
+    >
+      <i class="bi bi-plus-lg me-1"></i>
+      Incluir usuario
+    </button>
+  {{/ifEquals}}
+	</div>
+
+<div
+  class="modal fade"
+  id="addUserModal"
+  tabindex="-1"
+  aria-labelledby="addUserModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel">
+          Agregar usuario al grupo
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+
+      <form
+        action="/groups/{{group.code}}/add-user"
+        method="POST"
+      >
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">
+              Correo electrónico
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              placeholder="usuario@email.com"
+              required
+            >
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Agregar usuario
+          </button>
+        </div>
+      </form>
+
     </div>
-    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+  </div>
+</div>
+
+<div class="card-body" style="max-height: 300px; overflow-y: auto;">
       <ul class="list-group list-group-flush">
         {{#each group.members}}
           <li class="list-group-item d-flex justify-content-between align-items-center">

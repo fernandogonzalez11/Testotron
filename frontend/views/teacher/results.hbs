@@ -15,19 +15,42 @@
       <form class="row g-3 align-items-center">
         <div class="col-md-3">
           <select class="form-select" name="group">
-            <option>Todos los grupos</option>
-            <option>Ingeniería 2024</option>
-            <option>Humanidades A</option>
-            <option>Ciencias Naturales</option>
-            <option>Desarrollo Web</option>
-          </select>
+
+		  <option value="">
+    Todos los grupos
+</option>
+
+{{#each groups}}
+<option
+    value="{{code}}"
+    {{#ifEquals ../filters.group code}}
+        selected
+    {{/ifEquals}}
+>
+    {{name}}
+</option>
+{{/each}}
+
+	  </select>
         </div>
         <div class="col-md-3">
           <select class="form-select" name="status">
-            <option>Todos los estados</option>
-            <option>Aprobado</option>
-            <option>Reprobado</option>
-          </select>
+	  <option value="">
+    Todos los estados
+</option>
+
+<option
+    value="Aprobado"
+>
+    Aprobado
+</option>
+
+<option
+    value="Reprobado"
+>
+    Reprobado
+</option>
+	  </select>
         </div>
         <div class="col-md-4">
           <input type="search" class="form-control" name="search" placeholder="Buscar estudiante o cuestionario..." value="{{filters.search}}">
@@ -109,10 +132,13 @@
                   </td>
                   <td>{{date}}</td>
                   <td>{{time}}</td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-eye" aria-hidden="true"></i>
-                    </button>
+		  <td>
+			  <a
+    href="/results/answer/{{answer_id}}"
+    class="btn btn-sm btn-outline-secondary"
+>
+    <i class="bi bi-eye"></i>
+</a>
                   </td>
                 </tr>
               {{/each}}

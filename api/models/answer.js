@@ -58,4 +58,122 @@ function listResults(filters = {}) {
   return out;
 }
 
-module.exports = { createAnswer, addAnswerItem, getAnswer, listAnswers, listResults };
+function listTeacherResults(filters = {}) {
+
+  const db = getDB();
+
+  let q = `
+    SELECT
+      a.id AS answer_id,
+      a.created_at,
+
+      u.id AS student_id,
+      u.name AS student_name,
+      u.email AS student_email,
+
+      t.code AS test_code,
+      t.name AS test_name,
+
+      g.code AS group_code,
+      g.name AS group_name,
+
+      t.owner_id
+
+    FROM answers a
+
+    JOIN users u
+      ON u.id = a.user_id
+
+    JOIN tests t
+      ON t.code = a.test_code
+
+    LEFT JOIN groups g
+      ON g.code = t.group_code
+
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // only teacher own quizzes
+  if (filters.owner_id) {
+    q += ` AND t.owner_id = ?`;
+    params.push(filters.owner_id);
+  }
+
+  // group filter
+  if (filters.group_code) {
+    q += ` AND g.code = ?`;
+    params.push(filters.group_code);
+  }
+
+  // search filter
+  if (filters.search) {
+
+    q += `
+      AND (
+        u.name LIKE ?
+        OR u.email LIKE ?
+        OR t.name LIKE ?
+      )
+    `;
+
+    const s = `%${filters.search}%`;
+
+    params.push(s, s, s);
+  }
+
+  q += ` ORDER BY a.created_at DESC`;
+
+  const rows = db.prepare(q).all(...params);
+
+  return rows.map(r => {
+
+    const items = db.prepare(`
+      SELECT
+        ax.pts_obtained,
+        i.pts AS max_pts
+      FROM answerxitem ax
+      JOIN items i
+        ON i.id = ax.item_id
+      WHERE ax.answer_id = ?
+    `).all(r.answer_id);
+
+    let obtained = 0;
+    let max = 0;
+
+    for (const it of items) {
+      obtained += it.pts_obtained || 0;
+      max += it.max_pts || 0;
+    }
+
+    const pct = max
+      ? Math.round((obtained * 100) / max)
+      : 0;
+
+    return {
+
+      answer_id: r.answer_id,
+
+      student: r.student_name || r.student_email,
+
+      student_email: r.student_email,
+
+      quiz: r.test_name,
+
+      group: r.group_name || 'Sin grupo',
+
+      score: pct,
+
+      status: pct >= 70
+        ? 'Aprobado'
+        : 'Reprobado',
+
+      date: r.created_at,
+
+      time: '--'
+    };
+  });
+}
+
+module.exports = { createAnswer, addAnswerItem, getAnswer, listAnswers, listResults, listTeacherResults };

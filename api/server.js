@@ -22,8 +22,20 @@ const { listTests, getTest } = require('./models/test');
 const { authMiddleware } = require('./middleware/auth');
 const { listSections } = require('./models/section');
 const { listItems } = require('./models/item');
-const { listAnswers, listResults, getAnswer } = require('./models/answer');
-const { listGroups, groupDetail, createGroup} = require('./models/group');
+const { listAnswers, listResults, getAnswer, listTeacherResults } = require('./models/answer');
+const {
+    createGroup,
+    getGroup,
+    updateGroup,
+    deleteGroup,
+    listGroups,
+    addMember,
+    removeMember,
+    addMemberByEmail,
+    listMembers,
+    groupDetail
+} = require('./models/group');
+
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -395,28 +407,27 @@ app.get('/groups', (req, res) => {
     groups = groups.map(g => {
 
         const detail = groupDetail(g.code);
+return {
+    code: g.code,
+    name: g.name,
+    owner_id: g.owner_id,
+    created_at: g.created_at,
 
-        return {
-            code: g.code,
-            name: g.name,
-            owner_id: g.owner_id,
-            created_at: g.created_at,
+    membersCount:
+        detail?.members?.length || 0,
 
-            students_count:
-                detail?.members?.length || 0,
+    quizzesCount:
+        detail?.quizzes?.length || 0,
 
-            quizzes_count:
-                detail?.quizzes?.length || 0,
+    averageScore:
+        detail?.avg_score || 0,
 
-            avg_score:
-                detail?.avg_score || 0,
+    members:
+        detail?.members || [],
 
-            members:
-                detail?.members || [],
-
-            quizzes:
-                detail?.quizzes || []
-        };
+    quizzes:
+        detail?.quizzes || []
+};
     });
 
     // =========================
@@ -425,14 +436,14 @@ app.get('/groups', (req, res) => {
     const totalStudents =
         groups.reduce(
             (sum, g) =>
-                sum + (g.students_count || 0),
+                sum + (g.membersCount || 0),
             0
         );
 
     const assignedQuizzes =
         groups.reduce(
             (sum, g) =>
-                sum + (g.quizzes_count || 0),
+                sum + (g.quizzesCount || 0),
             0
         );
 
@@ -609,6 +620,186 @@ app.get('/groups/:id', (req, res) => {
     );
 });
 
+app.post('/groups/join', authMiddleware, (req, res) => {
+
+    try {
+
+        // =========================
+        // AUTH CHECK
+        // =========================
+
+        if (!req.user) {
+
+            return res.redirect('/auth/login');
+        }
+
+        // =========================
+        // ONLY STUDENTS
+        // =========================
+
+        if (req.user.role !== 'student') {
+
+            return res.redirect(
+                '/groups?error=' +
+                encodeURIComponent(
+                    'Solo estudiantes pueden ingresar a grupos'
+                )
+            );
+        }
+
+        // =========================
+        // VALIDATE CODE
+        // =========================
+
+        const code = String(
+            req.body.code || ''
+        )
+        .trim()
+        .toUpperCase();
+
+        if (!code) {
+
+            return res.redirect(
+                '/groups?error=' +
+                encodeURIComponent(
+                    'Código inválido'
+                )
+            );
+        }
+
+        // =========================
+        // GROUP EXISTS?
+        // =========================
+
+        const group = getGroup(code);
+
+        if (!group) {
+
+            return res.redirect(
+                '/groups?error=' +
+                encodeURIComponent(
+                    'Grupo no encontrado'
+                )
+            );
+        }
+
+        // =========================
+        // ADD MEMBER
+        // =========================
+
+        const changes = addMember(
+            code,
+            req.user.id
+        );
+
+        // already exists
+
+        if (!changes) {
+
+            return res.redirect(
+                '/groups?error=' +
+                encodeURIComponent(
+                    'Ya perteneces a este grupo'
+                )
+            );
+        }
+
+        // =========================
+        // SUCCESS
+        // =========================
+
+        return res.redirect(
+            '/groups?success=' +
+            encodeURIComponent(
+                'Te uniste al grupo correctamente'
+            )
+        );
+
+    } catch (err) {
+
+        console.error(err);
+
+        return res.redirect(
+            '/groups?error=' +
+            encodeURIComponent(
+                'No se pudo ingresar al grupo'
+            )
+        );
+    }
+});
+
+
+app.post(
+  '/groups/:id/add-user',
+  authMiddleware,
+  (req, res) => {
+
+    try {
+
+      if (!req.user) {
+        return res.redirect('/auth/login');
+      }
+
+      const code = req.params.id;
+
+      const group = groupDetail(code);
+
+      if (!group) {
+
+        return res.redirect(
+          '/groups?error=' +
+          encodeURIComponent('Grupo no encontrado')
+        );
+      }
+
+      // only teacher owner or admin
+      const allowed =
+        req.user.role === 'admin' ||
+        (
+          req.user.role === 'teacher' &&
+          group.owner_id === req.user.id
+        );
+
+      if (!allowed) {
+
+        return res.redirect(
+          '/groups?error=' +
+          encodeURIComponent('Acceso denegado')
+        );
+      }
+
+      const email =
+        String(req.body.email || '')
+          .trim()
+          .toLowerCase();
+
+      if (!email) {
+
+        return res.redirect(
+          `/groups/${code}?error=` +
+          encodeURIComponent('Correo requerido')
+        );
+      }
+
+      addMemberByEmail(code, email);
+
+      return res.redirect(
+        `/groups/${code}?success=` +
+        encodeURIComponent('Usuario agregado correctamente')
+      );
+
+    } catch (err) {
+
+      console.error(err);
+
+      return res.redirect(
+        `/groups/${req.params.id}?error=` +
+        encodeURIComponent(err.message)
+      );
+    }
+  }
+);
+
 app.get('/profile', (req, res) => {
     if (!req.user) {
         return res.redirect('/auth/login');
@@ -744,6 +935,112 @@ app.post('/profile/update', authMiddleware, async (req, res) => {
     }
 });
 
+
+app.get('/teacher/results', authMiddleware, (req, res) => {
+
+    if (!req.user) {
+        return res.redirect('/auth/login');
+    }
+
+    if (req.user.role !== 'teacher') {
+        return res.redirect('/');
+    }
+
+    const {
+        search = '',
+        group = '',
+	status = ''
+    } = req.query;
+
+    const results = listTeacherResults({
+
+        owner_id: req.user.id,
+
+        search: search.trim(),
+
+        group_code: group || null
+    });
+
+let filteredResults = results;
+
+if (status) {
+
+    filteredResults =
+        filteredResults.filter(
+            r => r.status === status
+        );
+}
+
+    // teacher groups
+    const groups = listGroups({
+        owner_id: req.user.id
+    });
+
+    // stats
+    const totalResults = results.length;
+
+    const averageScore =
+        totalResults
+            ? Math.round(
+                results.reduce(
+                    (sum, r) => sum + r.score,
+                    0
+                ) / totalResults
+            )
+            : 0;
+
+    const approved =
+        results.filter(
+            r => r.status === 'Aprobado'
+        ).length;
+
+    const approvalRate =
+        totalResults
+            ? Math.round(
+                (approved * 100) /
+                totalResults
+            )
+            : 0;
+
+    const stats = {
+        totalResults,
+        averageScore,
+        approvalRate,
+        totalAttempts: totalResults
+    };
+
+    const ctx = baseContext(req, {
+
+        pageTitle: 'Resultados',
+
+        active: {
+            results: true
+        },
+
+        locals: {
+
+            pageDescription:
+                'Consulta el rendimiento de los estudiantes',
+
+            filteredResults,
+
+            groups,
+
+            stats,
+
+            filters: {
+                search,
+                group,
+		status
+            }
+        }
+    });
+
+    res.render(
+        'teacher/results',
+        ctx
+    );
+});
 
 app.get('/results/quiz/:id', (req, res) => {
     if (!req.user) return res.redirect('/auth/login');

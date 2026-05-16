@@ -1,4 +1,5 @@
 const { getDB } = require('../controllers/db');
+const { getUserByEmail } = require('./user');
 
 function genCode() {
   return Math.random().toString(36).slice(2,10).toUpperCase();
@@ -35,7 +36,27 @@ function listGroups({ owner_id } = {}) {
 
 function addMember(group_code, user_id) {
   const db = getDB();
-  return db.prepare('INSERT OR REPLACE INTO user_groups (user_id, group_code) VALUES (?, ?)').run(user_id, group_code).changes;
+
+  const exists = db.prepare(`
+    SELECT 1
+    FROM user_groups
+    WHERE user_id = ?
+    AND group_code = ?
+  `).get(user_id, group_code);
+
+  if (exists) {
+    return 0;
+  }
+
+  const info = db.prepare(`
+    INSERT INTO user_groups (
+      user_id,
+      group_code
+    )
+    VALUES (?, ?)
+  `).run(user_id, group_code);
+
+  return info.changes;
 }
 
 function removeMember(group_code, user_id) {
@@ -45,7 +66,42 @@ function removeMember(group_code, user_id) {
 
 function listMembers(group_code) {
   const db = getDB();
-  return db.prepare('SELECT u.id, u.email, u.role, u.created_at FROM user_groups ug JOIN users u ON u.id = ug.user_id WHERE ug.group_code = ?').all(group_code);
+  return db.prepare('SELECT u.id, u.name, u.email, u.role, u.created_at FROM user_groups ug JOIN users u ON u.id = ug.user_id WHERE ug.group_code = ?').all(group_code);
+}
+
+function addMemberByEmail(group_code, email) {
+
+  const db = getDB();
+
+  // verify user exists
+  const user = getUserByEmail(email);
+
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  // verify already inside group
+  const exists = db.prepare(`
+    SELECT 1
+    FROM user_groups
+    WHERE user_id = ?
+    AND group_code = ?
+  `).get(user.id, group_code);
+
+  if (exists) {
+    throw new Error('El usuario ya pertenece al grupo');
+  }
+
+  // insert membership
+  db.prepare(`
+    INSERT INTO user_groups (
+      user_id,
+      group_code
+    )
+    VALUES (?, ?)
+  `).run(user.id, group_code);
+
+  return user;
 }
 
 function groupDetail(code) {
@@ -53,7 +109,7 @@ function groupDetail(code) {
   const g = db.prepare('SELECT * FROM groups WHERE code = ?').get(code);
   if (!g) return null;
   const members = listMembers(code);
-  const quizzes = db.prepare('SELECT code, name FROM tests WHERE group_code = ?').all(code);
+  const quizzes = db.prepare('SELECT * FROM tests WHERE group_code = ?').all(code);
   // average performance per group: compute average score of answers linked to tests of this group
   const avg = db.prepare(`SELECT AVG(score_pct) as avg_score FROM (
     SELECT a.id, SUM(ax.pts_obtained) as obtained, SUM(i.pts) as max_pts, (CASE WHEN SUM(i.pts)=0 THEN 0 ELSE ROUND( (SUM(ax.pts_obtained)*100.0)/SUM(i.pts),2) END) as score_pct
@@ -71,4 +127,4 @@ function groupDetail(code) {
   return g;
 }
 
-module.exports = { createGroup, getGroup, updateGroup, deleteGroup, listGroups, addMember, removeMember, listMembers, groupDetail };
+module.exports = { createGroup, getGroup, updateGroup, deleteGroup, listGroups, addMember, removeMember, listMembers, groupDetail, addMemberByEmail};

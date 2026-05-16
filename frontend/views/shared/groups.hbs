@@ -22,16 +22,32 @@
             Crear grupo
         </a> --}}
 
-        <button
-            class="btn text-white"
-            style="background-color: var(--color-primary);"
-            data-bs-toggle="modal"
-            data-bs-target="#groupModal"
-        >
-        <i class="bi bi-plus-lg me-1"></i> Nuevo grupo
-        </button>
-
+{{#ifEquals user.role "teacher"}}
+<button
+    class="btn text-white"
+    style="background-color: var(--color-primary);"
+    data-bs-toggle="modal"
+    data-bs-target="#groupModal"
+>
+    <i class="bi bi-plus-lg me-1"></i>
+    Nuevo grupo
+</button>
+{{/ifEquals}}
         {{> group-modal }}
+
+{{#ifEquals user.role "student"}}
+<button
+    class="btn btn-success"
+    data-bs-toggle="modal"
+    data-bs-target="#joinGroupModal"
+>
+    <i class="bi bi-box-arrow-in-right me-1"></i>
+    Ingresar a grupo
+</button>
+
+{{> join-group-modal}}
+{{/ifEquals}}
+
 
     </div>
 
@@ -62,7 +78,8 @@
         </div>
     </section>
 
-    {{!-- <section
+    {{#ifEquals user.role "teacher"}}
+    <section
         class="row g-4 mb-4"
         aria-label="Estadísticas de grupos"
     >
@@ -130,7 +147,9 @@
                 </div>
             </article>
         </div>
-    </section> --}}
+    </section>
+    {{/ifEquals}}
+
 
     <section aria-label="Listado de grupos">
         <div class="row g-4">
