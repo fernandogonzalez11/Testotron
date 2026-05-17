@@ -1,4 +1,4 @@
-const { getDB } = require('../controllers/db');
+const { getDB } = require('../db');
 const groupService = require('../services/group-service');
 const testModel = require('../models/test');
 
