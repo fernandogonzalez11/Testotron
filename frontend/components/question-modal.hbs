@@ -1,91 +1,129 @@
-<div class="modal fade" id="questionModal" tabindex="-1" aria-labelledby="questionModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+<div
+  class="modal fade"
+  id="questionModal"
+  tabindex="-1"
+  aria-labelledby="questionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
+
       <div class="modal-header">
-        <h5 class="modal-title" id="questionModalLabel">Añadir pregunta</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h5 class="modal-title" id="questionModalLabel">
+          Añadir pregunta
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
       </div>
-      <div class="modal-body">
-        <form id="question-modal-form">
-          <!-- Pregunta -->
+
+      <form id="question-modal-form">
+
+        <div class="modal-body">
+
+          <!-- QUESTION -->
           <div class="mb-3">
-            <label for="questionText" class="form-label">Pregunta</label>
-            <textarea id="questionText" class="form-control" rows="2" placeholder="Escribe la pregunta aquí…"></textarea>
+            <label for="questionText" class="form-label">
+              Pregunta
+            </label>
+
+            <textarea
+              id="questionText"
+              class="form-control"
+              rows="3"
+              required
+            ></textarea>
           </div>
 
-          <!-- Tipo de pregunta -->
+          <!-- TYPE -->
           <div class="mb-3">
-            <label for="questionType" class="form-label">Tipo de pregunta</label>
-            <select id="questionType" class="form-select">
-              {{#each questionForm.types}}
-                <option value="{{this}}" {{#ifEquals this ../questionForm.current.type}}selected{{/ifEquals}}>{{this}}</option>
-              {{/each}}
+            <label for="questionType" class="form-label">
+              Tipo
+            </label>
+
+            <select
+              id="questionType"
+              class="form-select"
+            >
+              <option value="multiple_choice">
+                Selección única
+              </option>
+
+              <option value="multiple_response">
+                Selección múltiple
+              </option>
+
+              <option value="true_false">
+                Verdadero / Falso
+              </option>
+
+              <option value="short_answer">
+                Respuesta corta
+              </option>
+
+              <option value="fill_blank">
+                Completar espacios
+              </option>
+
+              <option value="numeric">
+                Numérica
+              </option>
+
+              <option value="matching">
+                Relación de columnas
+              </option>
+
+              <option value="essay">
+                Ensayo
+              </option>
             </select>
           </div>
 
-          <!-- Categoría -->
+          <!-- POINTS -->
           <div class="mb-3">
-            <label for="questionCategory" class="form-label">Categoría</label>
-            <select id="questionCategory" class="form-select">
-              {{#each questionForm.categories}}
-                <option value="{{this}}" {{#ifEquals this ../questionForm.current.category}}selected{{/ifEquals}}>{{this}}</option>
-              {{/each}}
-            </select>
+            <label for="questionPoints" class="form-label">
+              Puntos
+            </label>
+
+            <input
+              type="number"
+              id="questionPoints"
+              class="form-control"
+              min="1"
+              value="1"
+            >
           </div>
 
-          <!-- Dificultad -->
-          <div class="mb-3">
-            <label for="questionDifficulty" class="form-label">Dificultad</label>
-            <select id="questionDifficulty" class="form-select">
-              {{#each questionForm.difficulties}}
-                <option value="{{this}}" {{#ifEquals this ../questionForm.current.difficulty}}selected{{/ifEquals}}>{{this}}</option>
-              {{/each}}
-            </select>
-          </div>
+          <!-- DYNAMIC -->
+          <div id="dynamicQuestionFields"></div>
 
-          <!-- Opciones dinámicas -->
-          <div id="answerOptions" class="mb-3">
-            <label class="form-label">Opciones de respuesta</label>
-            {{#ifEquals questionForm.current.type "Selección única"}}
-              {{#each questionForm.current.options}}
-                <div class="input-group mb-2">
-                  <div class="input-group-text">
-                    <input class="form-check-input mt-0" type="radio" name="correctOption" {{#if correct}}checked{{/if}} aria-label="Seleccionar como correcta">
-                  </div>
-                  <input type="text" class="form-control" value="{{text}}" placeholder="Texto de opción">
-                </div>
-              {{/each}}
-              <button type="button" class="btn btn-sm btn-success" aria-label="Añadir opción">
-                <i class="bi bi-plus-circle"></i> Añadir opción
-              </button>
-            {{/ifEquals}}
-
-            {{#ifEquals questionForm.current.type "Selección múltiple"}}
-              {{#each questionForm.current.options}}
-                <div class="input-group mb-2">
-                  <div class="input-group-text">
-                    <input class="form-check-input mt-0" type="checkbox" {{#if correct}}checked{{/if}} aria-label="Seleccionar como correcta">
-                  </div>
-                  <input type="text" class="form-control" value="{{text}}" placeholder="Texto de opción">
-                </div>
-              {{/each}}
-              <button type="button" class="btn btn-sm btn-success" aria-label="Añadir opción">
-                <i class="bi bi-plus-circle"></i> Añadir opción
-              </button>
-            {{/ifEquals}}
-
-            {{#ifEquals questionForm.current.type "Respuesta corta"}}
-              <input type="text" class="form-control" placeholder="Respuesta esperada">
-            {{/ifEquals}}
-          </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-success">Agregar pregunta</button>
         </div>
-        </form>
-      </div>
-      
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-success"
+          >
+            Guardar pregunta
+          </button>
+
+        </div>
+
+      </form>
+
     </div>
   </div>
 </div>

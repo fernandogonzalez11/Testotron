@@ -1,129 +1,394 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const questionTypeSelect = document.getElementById('questionType');
-  const answerOptionsContainer = document.getElementById('answerOptions');
 
-  // Conectar botón "Nueva pregunta" con el modal
-  const newQuestionBtn = document.querySelector('a[href="/teacher/question-bank/new"]');
-  if (newQuestionBtn) {
-    newQuestionBtn.setAttribute('data-bs-toggle', 'modal');
-    newQuestionBtn.setAttribute('data-bs-target', '#questionModal');
-    newQuestionBtn.removeAttribute('href');
-  }
+  const typeSelect = document.getElementById('questionType');
+  const dynamicContainer = document.getElementById('dynamicQuestionFields');
+  const form = document.getElementById('question-modal-form');
 
-  // Render dinámico de opciones según tipo
-  function renderOptions(type) {
-    answerOptionsContainer.innerHTML = ''; // limpiar
+  renderFields(typeSelect.value);
 
-    if (type === 'Selección única' || type === 'Selección múltiple') {
-      const addBtn = document.createElement('button');
-      addBtn.type = 'button';
-      addBtn.className = 'btn btn-sm btn-success mt-2';
-      addBtn.setAttribute('aria-label', 'Añadir opción');
-      addBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Añadir opción';
-
-      answerOptionsContainer.appendChild(addBtn);
-
-      // listener único para añadir opción
-      addBtn.addEventListener('click', () => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'input-group mb-2';
-
-        if (type === 'Selección única') {
-          wrapper.innerHTML = `
-            <div class="input-group-text">
-              <input class="form-check-input mt-0" type="radio" name="correctOption" aria-label="Seleccionar como correcta">
-            </div>
-            <input type="text" class="form-control" placeholder="Texto de opción">
-          `;
-        } else {
-          wrapper.innerHTML = `
-            <div class="input-group-text">
-              <input class="form-check-input mt-0" type="checkbox" aria-label="Seleccionar como correcta">
-            </div>
-            <input type="text" class="form-control" placeholder="Texto de opción">
-          `;
-        }
-        answerOptionsContainer.insertBefore(wrapper, addBtn);
-      });
-    }
-
-    if (type === 'Respuesta corta') {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'form-control';
-      input.placeholder = 'Respuesta esperada';
-      answerOptionsContainer.appendChild(input);
-    }
-  }
-
-  // Inicializar con el valor actual
-  renderOptions(questionTypeSelect.value);
-
-  // Cambiar tipo de pregunta
-  questionTypeSelect.addEventListener('change', () => {
-    renderOptions(questionTypeSelect.value);
+  typeSelect.addEventListener('change', () => {
+    renderFields(typeSelect.value);
   });
-});
 
-document.addEventListener('DOMContentLoaded', () => {
-  const questionTypeSelect = document.getElementById('questionType');
-  const answerOptionsContainer = document.getElementById('answerOptions');
-  const addOptionButtons = document.querySelectorAll('[aria-label="Añadir opción"]');
+  function renderFields(type) {
 
-  // Abrir modal desde botón "Nueva pregunta"
-  const newQuestionBtn = document.getElementById('addQuestionBtn');
-  if (newQuestionBtn) {
-    newQuestionBtn.setAttribute('data-bs-toggle', 'modal');
-    newQuestionBtn.setAttribute('data-bs-target', '#questionModal');
-  }
+    dynamicContainer.innerHTML = '';
 
-  // Añadir nueva opción dinámicamente
-  addOptionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const type = questionTypeSelect.value;
+    /*
+    =========================================
+    MULTIPLE CHOICE / MULTIPLE RESPONSE
+    =========================================
+    */
+
+    if (
+      type === 'multiple_choice' ||
+      type === 'multiple_response'
+    ) {
+
       const wrapper = document.createElement('div');
-      wrapper.className = 'input-group mb-2';
 
-      if (type === 'Selección única') {
-        wrapper.innerHTML = `
+      wrapper.innerHTML = `
+        <label class="form-label">
+          Opciones
+        </label>
+
+        <div id="optionsContainer"></div>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-success mt-2"
+          id="addOptionBtn"
+        >
+          <i class="bi bi-plus-circle"></i>
+          Añadir opción
+        </button>
+      `;
+
+      dynamicContainer.appendChild(wrapper);
+
+      const optionsContainer =
+        document.getElementById('optionsContainer');
+
+      const addOptionBtn =
+        document.getElementById('addOptionBtn');
+
+      function addOption() {
+
+        const optionDiv = document.createElement('div');
+
+        optionDiv.className =
+          'input-group mb-2';
+
+        optionDiv.innerHTML = `
           <div class="input-group-text">
-            <input class="form-check-input mt-0" type="radio" name="correctOption" aria-label="Seleccionar como correcta">
+
+            <input
+              class="form-check-input mt-0 correct-option"
+              type="${type === 'multiple_choice' ? 'radio' : 'checkbox'}"
+              name="correctOption"
+            >
+
           </div>
-          <input type="text" class="form-control" placeholder="Texto de opción">
+
+          <input
+            type="text"
+            class="form-control option-text"
+            placeholder="Texto de opción"
+          >
+
+          <button
+            type="button"
+            class="btn btn-outline-danger remove-option"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
         `;
-      } else if (type === 'Selección múltiple') {
-        wrapper.innerHTML = `
-          <div class="input-group-text">
-            <input class="form-check-input mt-0" type="checkbox" aria-label="Seleccionar como correcta">
-          </div>
-          <input type="text" class="form-control" placeholder="Texto de opción">
-        `;
+
+        optionsContainer.appendChild(optionDiv);
+
+        optionDiv
+          .querySelector('.remove-option')
+          .addEventListener('click', () => {
+            optionDiv.remove();
+          });
       }
-      answerOptionsContainer.insertBefore(wrapper, btn);
+
+      addOption();
+      addOption();
+
+      addOptionBtn.addEventListener('click', addOption);
+    }
+
+    /*
+    =========================================
+    TRUE FALSE
+    =========================================
+    */
+
+    if (type === 'true_false') {
+
+      dynamicContainer.innerHTML = `
+        <label class="form-label">
+          Respuesta correcta
+        </label>
+
+        <select
+          id="trueFalseAnswer"
+          class="form-select"
+        >
+          <option value="true">
+            Verdadero
+          </option>
+
+          <option value="false">
+            Falso
+          </option>
+        </select>
+      `;
+    }
+
+    /*
+    =========================================
+    SHORT ANSWER
+    =========================================
+    */
+
+    if (type === 'short_answer') {
+
+      dynamicContainer.innerHTML = `
+        <label class="form-label">
+          Respuesta correcta
+        </label>
+
+        <input
+          type="text"
+          id="shortAnswer"
+          class="form-control"
+        >
+      `;
+    }
+
+    /*
+    =========================================
+    NUMERIC
+    =========================================
+    */
+
+    if (type === 'numeric') {
+
+      dynamicContainer.innerHTML = `
+        <label class="form-label">
+          Valor correcto
+        </label>
+
+        <input
+          type="number"
+          id="numericAnswer"
+          class="form-control"
+        >
+      `;
+    }
+
+    /*
+    =========================================
+    ESSAY
+    =========================================
+    */
+
+    if (type === 'essay') {
+
+      dynamicContainer.innerHTML = `
+        <div class="alert alert-info mb-0">
+          Las preguntas tipo ensayo serán calificadas manualmente.
+        </div>
+      `;
+    }
+
+    /*
+    =========================================
+    FILL BLANK
+    =========================================
+    */
+
+    if (type === 'fill_blank') {
+
+      dynamicContainer.innerHTML = `
+        <label class="form-label">
+          Respuesta correcta
+        </label>
+
+        <input
+          type="text"
+          id="fillBlankAnswer"
+          class="form-control"
+        >
+      `;
+    }
+
+    /*
+    =========================================
+    MATCHING
+    =========================================
+    */
+
+    if (type === 'matching') {
+
+      dynamicContainer.innerHTML = `
+        <label class="form-label">
+          Relaciones
+        </label>
+
+        <div id="matchingContainer"></div>
+
+        <button
+          type="button"
+          class="btn btn-success btn-sm mt-2"
+          id="addMatchBtn"
+        >
+          Añadir relación
+        </button>
+      `;
+
+      const matchingContainer =
+        document.getElementById('matchingContainer');
+
+      const addMatchBtn =
+        document.getElementById('addMatchBtn');
+
+      function addMatch() {
+
+        const row = document.createElement('div');
+
+        row.className = 'row g-2 mb-2';
+
+        row.innerHTML = `
+          <div class="col">
+            <input
+              type="text"
+              class="form-control match-left"
+              placeholder="Concepto"
+            >
+          </div>
+
+          <div class="col">
+            <input
+              type="text"
+              class="form-control match-right"
+              placeholder="Respuesta"
+            >
+          </div>
+        `;
+
+        matchingContainer.appendChild(row);
+      }
+
+      addMatch();
+      addMatchBtn.addEventListener('click', addMatch);
+    }
+
+  }
+
+  /*
+  =========================================
+  SAVE QUESTION
+  =========================================
+  */
+
+  form.addEventListener('submit', async (e) => {
+
+    e.preventDefault();
+
+    const type = typeSelect.value;
+
+    const payload = {
+      question: document
+        .getElementById('questionText')
+        .value
+        .trim(),
+
+      type,
+
+      pts: Number(
+        document.getElementById('questionPoints').value
+      ),
+
+      config: {}
+    };
+
+    /*
+    =========================================
+    EXTRACT DATA
+    =========================================
+    */
+
+    if (
+      type === 'multiple_choice' ||
+      type === 'multiple_response'
+    ) {
+
+      const options = [];
+
+      document.querySelectorAll('#optionsContainer .input-group')
+        .forEach((row) => {
+
+          options.push({
+            text: row.querySelector('.option-text').value,
+            correct: row.querySelector('.correct-option').checked
+          });
+
+        });
+
+      payload.config.options = options;
+    }
+
+    if (type === 'true_false') {
+
+      payload.config.answer =
+        document.getElementById('trueFalseAnswer').value;
+    }
+
+    if (type === 'short_answer') {
+
+      payload.config.answer =
+        document.getElementById('shortAnswer').value;
+    }
+
+    if (type === 'fill_blank') {
+
+      payload.config.answer =
+        document.getElementById('fillBlankAnswer').value;
+    }
+
+    if (type === 'numeric') {
+
+      payload.config.answer =
+        Number(
+          document.getElementById('numericAnswer').value
+        );
+    }
+
+    if (type === 'matching') {
+
+      const pairs = [];
+
+      document.querySelectorAll('#matchingContainer .row')
+        .forEach((row) => {
+
+          pairs.push({
+            left: row.querySelector('.match-left').value,
+            right: row.querySelector('.match-right').value
+          });
+
+        });
+
+      payload.config.pairs = pairs;
+    }
+
+    /*
+    =========================================
+    SEND
+    =========================================
+    */
+
+    const res = await fetch('/api/questions', {
+
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || 'Error');
+      return;
+    }
+
+    window.location.reload();
   });
 
-  // Cambiar tipo de pregunta (simplificado: aquí podrías limpiar y regenerar inputs)
-  questionTypeSelect.addEventListener('change', () => {
-    // En un proyecto real, aquí harías un render dinámico según el tipo seleccionado
-    // Por ahora, dejamos que Handlebars inicialice y el botón "Añadir opción" agregue más
-  });
-});
-
-form = document.getElementById('question-modal-form');
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const text = form.querySelector('#questionText').value.trim();
-  const type = form.querySelector('#questionType').value;
-
-  if (!text) return;
-
-  const event = new CustomEvent('question:add', {
-    detail: { text, type }
-  });
-  document.dispatchEvent(event);
-
-  const modal = bootstrap.Modal.getInstance(questionModal);
-  modal.hide();
-  form.reset();
 });
