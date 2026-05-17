@@ -1,0 +1,34 @@
+const express = require('express');
+const controller = require('../controllers/teacher');
+
+module.exports = function(baseContext) {
+
+  const router = express.Router();
+  
+  router.get(
+    '/quizzes',
+    (req, res) =>
+      controller.teacherQuizzesPage(req, res, baseContext)
+  );
+
+
+  router.get(
+    '/questions',
+    (req, res) =>
+      controller.questionsPage(req, res, baseContext)
+  );
+
+  router.get(
+    '/templates',
+    (req, res) =>
+      controller.templatesPage(req, res, baseContext)
+  );
+
+  router.get(
+    '/quizzes/create',
+    (req, res) =>
+      controller.createQuizPage(req, res, baseContext)
+  );
+
+  return router;
+};

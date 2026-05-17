@@ -83,22 +83,59 @@
             </select>
           </div>
 
-          <!-- POINTS -->
-          <div class="mb-3">
-            <label for="questionPoints" class="form-label">
-              Puntos
-            </label>
+	<!-- CATEGORY -->
+<div class="mb-3">
 
-            <input
-              type="number"
-              id="questionPoints"
-              class="form-control"
-              min="1"
-              value="1"
-            >
-          </div>
+  <label
+    for="questionCategory"
+    class="form-label"
+  >
+    Categoría
+  </label>
 
-          <!-- DYNAMIC -->
+  <input
+    type="text"
+    id="questionCategory"
+    class="form-control"
+  >
+
+</div>
+
+<!-- DIFFICULTY -->
+<div class="mb-3">
+
+  <label
+    for="questionDifficulty"
+    class="form-label"
+  >
+    Dificultad
+  </label>
+
+  <select
+    id="questionDifficulty"
+    class="form-select"
+  >
+
+    <option value="easy">
+      Fácil
+    </option>
+
+    <option
+      value="medium"
+      selected
+    >
+      Media
+    </option>
+
+    <option value="hard">
+      Difícil
+    </option>
+
+  </select>
+
+</div>
+
+	  <!-- DYNAMIC -->
           <div id="dynamicQuestionFields"></div>
 
         </div>

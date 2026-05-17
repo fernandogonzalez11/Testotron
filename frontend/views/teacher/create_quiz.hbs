@@ -31,10 +31,12 @@
           <div class="col-md-6">
             <label for="quizGroup" class="form-label">Asignar a grupo *</label>
             <select id="quizGroup" name="quizGroup" class="form-select">
-              {{#each groups}}
-                <option value="{{this}}" {{#ifEquals this ../quiz.group}}selected{{/ifEquals}}>{{this}}</option>
-              {{/each}}
-            </select>
+	    {{#each groups}}
+  <option value="{{this.code}}">
+    {{this.name}}
+  </option>
+{{/each}}
+	    </select>
           </div>
         </div>
 

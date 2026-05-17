@@ -1,4 +1,4 @@
-const { getDB } = require('../controllers/db');
+const { getDB } = require('../db');
 const { getUserByEmail } = require('./user');
 
 function genCode() {
@@ -105,25 +105,48 @@ function addMemberByEmail(group_code, email) {
 }
 
 function groupDetail(code) {
+
   const db = getDB();
-  const g = db.prepare('SELECT * FROM groups WHERE code = ?').get(code);
+
+  const g = db.prepare(`
+    SELECT *
+    FROM groups
+    WHERE code = ?
+  `).get(code);
+
   if (!g) return null;
+
   const members = listMembers(code);
-  const quizzes = db.prepare('SELECT * FROM tests WHERE group_code = ?').all(code);
-  // average performance per group: compute average score of answers linked to tests of this group
-  const avg = db.prepare(`SELECT AVG(score_pct) as avg_score FROM (
-    SELECT a.id, SUM(ax.pts_obtained) as obtained, SUM(i.pts) as max_pts, (CASE WHEN SUM(i.pts)=0 THEN 0 ELSE ROUND( (SUM(ax.pts_obtained)*100.0)/SUM(i.pts),2) END) as score_pct
-    FROM answers a
-    JOIN answerxitem ax ON ax.answer_id = a.id
-    JOIN items i ON i.id = ax.item_id
-    JOIN tests t ON t.code = a.test_code
+
+  const quizzes = db.prepare(`
+    SELECT *
+    FROM tests
+    WHERE group_code = ?
+    ORDER BY created_at DESC
+  `).all(code);
+
+  /*
+  =====================================
+  GROUP AVERAGE SCORE
+  =====================================
+
+  attempts.score already exists.
+  Use it directly.
+  */
+
+  const avg = db.prepare(`
+    SELECT AVG(score) as avg_score
+    FROM attempts a
+    JOIN tests t
+      ON t.code = a.test_code
     WHERE t.group_code = ?
-    GROUP BY a.id
-  )`).get(code);
+      AND a.status IN ('submitted', 'graded')
+  `).get(code);
 
   g.members = members;
   g.quizzes = quizzes;
-  g.avg_score = avg ? avg.avg_score : null;
+  g.avg_score = avg?.avg_score || 0;
+
   return g;
 }
 

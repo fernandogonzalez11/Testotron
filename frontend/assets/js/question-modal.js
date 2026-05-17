@@ -274,121 +274,206 @@ document.addEventListener('DOMContentLoaded', () => {
   =========================================
   */
 
-  form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    const type = typeSelect.value;
+  const type = typeSelect.value;
 
-    const payload = {
-      question: document
+  const payload = {
+
+    question:
+      document
         .getElementById('questionText')
         .value
         .trim(),
 
-      type,
+    type,
 
-      pts: Number(
-        document.getElementById('questionPoints').value
-      ),
+    difficulty:
+      document.getElementById('questionDifficulty')?.value
+      || 'medium',
 
-      config: {}
-    };
+    category:
+      document.getElementById('questionCategory')?.value
+      || '',
 
-    /*
-    =========================================
-    EXTRACT DATA
-    =========================================
-    */
+    metadata: {},
 
-    if (
-      type === 'multiple_choice' ||
-      type === 'multiple_response'
-    ) {
+    correct_answer: null
+  };
 
-      const options = [];
+  /*
+  =========================================
+  MULTIPLE CHOICE / RESPONSE
+  =========================================
+  */
 
-      document.querySelectorAll('#optionsContainer .input-group')
-        .forEach((row) => {
+  if (
+    type === 'multiple_choice' ||
+    type === 'multiple_response'
+  ) {
 
-          options.push({
-            text: row.querySelector('.option-text').value,
-            correct: row.querySelector('.correct-option').checked
-          });
+    const options = [];
+
+    const correctAnswers = [];
+
+    document
+      .querySelectorAll('#optionsContainer .input-group')
+      .forEach((row, index) => {
+
+        const text =
+          row.querySelector('.option-text')
+            .value
+            .trim();
+
+        const correct =
+          row.querySelector('.correct-option')
+            .checked;
+
+        options.push(text);
+
+        if (correct) {
+          correctAnswers.push(index);
+        }
+
+      });
+
+    payload.metadata.options = options;
+
+    payload.correct_answer =
+      type === 'multiple_choice'
+        ? correctAnswers[0]
+        : correctAnswers;
+  }
+
+  /*
+  =========================================
+  TRUE FALSE
+  =========================================
+  */
+
+  if (type === 'true_false') {
+
+    payload.correct_answer =
+      document.getElementById('trueFalseAnswer').value === 'true';
+  }
+
+  /*
+  =========================================
+  SHORT ANSWER
+  =========================================
+  */
+
+  if (type === 'short_answer') {
+
+    payload.correct_answer =
+      document.getElementById('shortAnswer')
+        .value
+        .trim();
+  }
+
+  /*
+  =========================================
+  FILL BLANK
+  =========================================
+  */
+
+  if (type === 'fill_blank') {
+
+    payload.correct_answer =
+      document.getElementById('fillBlankAnswer')
+        .value
+        .trim();
+  }
+
+  /*
+  =========================================
+  NUMERIC
+  =========================================
+  */
+
+  if (type === 'numeric') {
+
+    payload.correct_answer =
+      Number(
+        document.getElementById('numericAnswer').value
+      );
+  }
+
+  /*
+  =========================================
+  MATCHING
+  =========================================
+  */
+
+  if (type === 'matching') {
+
+    const pairs = [];
+
+    document
+      .querySelectorAll('#matchingContainer .row')
+      .forEach((row) => {
+
+        pairs.push({
+
+          left:
+            row.querySelector('.match-left')
+              .value,
+
+          right:
+            row.querySelector('.match-right')
+              .value
 
         });
 
-      payload.config.options = options;
-    }
+      });
 
-    if (type === 'true_false') {
+    payload.metadata.pairs = pairs;
 
-      payload.config.answer =
-        document.getElementById('trueFalseAnswer').value;
-    }
+    payload.correct_answer = pairs;
+  }
 
-    if (type === 'short_answer') {
+  /*
+  =========================================
+  ESSAY
+  =========================================
+  */
 
-      payload.config.answer =
-        document.getElementById('shortAnswer').value;
-    }
+  if (type === 'essay') {
 
-    if (type === 'fill_blank') {
+    payload.correct_answer = null;
+  }
 
-      payload.config.answer =
-        document.getElementById('fillBlankAnswer').value;
-    }
+  /*
+  =========================================
+  SEND
+  =========================================
+  */
 
-    if (type === 'numeric') {
+  const res = await fetch('/api/questions', {
 
-      payload.config.answer =
-        Number(
-          document.getElementById('numericAnswer').value
-        );
-    }
+    method: 'POST',
 
-    if (type === 'matching') {
+    headers: {
+      'Content-Type': 'application/json'
+    },
 
-      const pairs = [];
+    body: JSON.stringify(payload)
 
-      document.querySelectorAll('#matchingContainer .row')
-        .forEach((row) => {
-
-          pairs.push({
-            left: row.querySelector('.match-left').value,
-            right: row.querySelector('.match-right').value
-          });
-
-        });
-
-      payload.config.pairs = pairs;
-    }
-
-    /*
-    =========================================
-    SEND
-    =========================================
-    */
-
-    const res = await fetch('/api/questions', {
-
-      method: 'POST',
-
-      headers: {
-        'Content-Type': 'application/json'
-      },
-
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || 'Error');
-      return;
-    }
-
-    window.location.reload();
   });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+
+    alert(data.error || 'Error');
+
+    return;
+  }
+
+  window.location.reload();
+
+});
 
 });
