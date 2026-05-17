@@ -5,13 +5,13 @@ const { AnswerController } = require('../controllers/answer');
 
 router.use(authMiddleware);
 
-// POST /answers : submit attempt
+// POST /api/attempt-answers : submit attempt answers
 router.post('/', requireRole('student','teacher','admin'), AnswerController.submit);
-// GET /answers/results - aggregated teacher results
+// GET /api/attempt-answers/results - aggregated teacher results
 router.get('/results', requireRole('teacher','admin'), AnswerController.results);
-// GET /answers
+// GET /api/attempt-answers
 router.get('/', requireRole('teacher','admin'), AnswerController.list);
-// GET /answers/:id
+// GET /api/attempt-answers/:id
 router.get('/:id', requireRole('teacher','admin','student'), AnswerController.get);
 
 module.exports = router;

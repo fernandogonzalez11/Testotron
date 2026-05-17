@@ -11,7 +11,6 @@ module.exports = function(baseContext) {
       controller.teacherQuizzesPage(req, res, baseContext)
   );
 
-
   router.get(
     '/questions',
     (req, res) =>
@@ -28,6 +27,12 @@ module.exports = function(baseContext) {
     '/quizzes/create',
     (req, res) =>
       controller.createQuizPage(req, res, baseContext)
+  );
+
+  router.get(
+    '/results',
+    (req, res) =>
+      controller.quizzesResultsPage(req, res, baseContext)
   );
 
   return router;

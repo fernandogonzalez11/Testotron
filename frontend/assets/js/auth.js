@@ -26,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!role) {
           role = 'student';
         }
-
+	
         console.log('Logged in as:', role);
-        window.location.href = `/${role}/quizzes`;
+        window.location.href = `/dashboard`;  
 
       } catch (err) {
 

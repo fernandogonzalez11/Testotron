@@ -4,9 +4,9 @@ const { listGroups } = require('../../api/models/user');
 function adminPage(req, res, baseContext)  {
     if (!req.user) return res.redirect('/auth/login');
     if (req.user.role !== 'admin') return res.status(403).render('shared/error', { message: 'Acceso denegado' });
-    const users = require('./models/user').listUsers();
-    const tests = listTests();
-    const db = require('./db').getDB();
+    const users = require('../../api/models/user').listUsers();
+    const tests = require('../../api/models/test').listTests();
+    const db = getDB();
     const adminsRow = db.prepare("SELECT COUNT(*) as cnt FROM users WHERE role='admin'").get();
     const stats = { totalUsers: users.length, activeQuizzes: tests.length, admins: adminsRow ? adminsRow.cnt : 0, activityToday: 0 };
     // build tables array for template
@@ -23,7 +23,7 @@ function adminPage(req, res, baseContext)  {
       }
     ];
     const ctx = baseContext(req, { pageTitle: 'Panel de administración', active: { tables: true }, locals: { stats, tables } });
-    res.render('admin/tables', ctx);
+    res.render('admin/management', ctx);
 };
 
-module.export = { adminPage }
+module.exports = { adminPage }

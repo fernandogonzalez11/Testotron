@@ -1,179 +1,275 @@
-const { getDB } = require('../controllers/db');
+const { getDB } = require('../db');
 
-function createAnswer({ user_id, test_code }) {
+// Upsert an attempt answer (one row per attempt_id + test_question_id)
+function upsertAttemptAnswer({ attempt_id, test_question_id, response = null, pts_obtained = 0, feedback = null, graded_by = null }) {
   const db = getDB();
-  const info = db.prepare('INSERT INTO answers (user_id, test_code) VALUES (?, ?)').run(user_id, test_code);
-  return { id: info.lastInsertRowid, user_id, test_code };
+  const stmt = db.prepare(`
+    INSERT INTO attempt_answers (attempt_id, test_question_id, response, pts_obtained, feedback, graded_by, graded_at, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+    ON CONFLICT(attempt_id, test_question_id) DO UPDATE SET
+      response = excluded.response,
+      pts_obtained = excluded.pts_obtained,
+      feedback = excluded.feedback,
+      graded_by = excluded.graded_by,
+      graded_at = excluded.graded_at,
+      updated_at = datetime('now')
+  `);
+  const info = stmt.run(attempt_id, test_question_id, JSON.stringify(response), pts_obtained, feedback, graded_by);
+  return info.changes;
 }
 
-function addAnswerItem({ answer_id, item_id, pts_obtained = 0, feedback = null }) {
+function getAttemptAnswers(attempt_id) {
   const db = getDB();
-  db.prepare('INSERT INTO answerxitem (answer_id, item_id, pts_obtained, feedback) VALUES (?, ?, ?, ?)').run(answer_id, item_id, pts_obtained, feedback);
-  return { answer_id, item_id, pts_obtained, feedback };
+  const rows = db.prepare(`
+    SELECT aa.attempt_id, aa.test_question_id, aa.response, aa.pts_obtained, aa.feedback, aa.graded_by, aa.graded_at, tq.question, tq.pts
+    FROM attempt_answers aa
+    JOIN test_questions tq ON tq.id = aa.test_question_id
+    WHERE aa.attempt_id = ?
+    ORDER BY tq.position ASC
+  `).all(Number(attempt_id));
+
+  return rows.map(r => ({
+    attempt_id: r.attempt_id,
+    test_question_id: r.test_question_id,
+    response: r.response ? JSON.parse(r.response) : null,
+    pts_obtained: r.pts_obtained,
+    feedback: r.feedback,
+    graded_by: r.graded_by,
+    graded_at: r.graded_at,
+    question: r.question,
+    pts: r.pts
+  }));
 }
 
-function getAnswer(id) {
+function listAttemptAnswers(filters = {}) {
   const db = getDB();
-  const ans = db.prepare('SELECT a.*, u.email as student_email, t.name as test_name, t.group_code FROM answers a JOIN users u ON u.id = a.user_id JOIN tests t ON t.code = a.test_code WHERE a.id = ?').get(id);
-  if (!ans) return null;
-  const items = db.prepare('SELECT ax.item_id, ax.pts_obtained, ax.feedback, i.question, i.answer as correct_answer, i.pts as max_pts FROM answerxitem ax JOIN items i ON i.id = ax.item_id WHERE ax.answer_id = ?').all(id);
-  ans.items = items;
-  return ans;
-}
-
-function listAnswers(filters = {}) {
-  const db = getDB();
-  let q = 'SELECT a.id, a.user_id, u.email as student_email, a.test_code, t.name as test_name, a.created_at FROM answers a JOIN users u ON u.id = a.user_id JOIN tests t ON t.code = a.test_code WHERE 1=1';
+  let q = `SELECT aa.attempt_id, aa.test_question_id, aa.pts_obtained, aa.feedback, aa.updated_at, a.user_id, a.test_code FROM attempt_answers aa JOIN attempts a ON a.id = aa.attempt_id WHERE 1=1`;
   const params = [];
   if (filters.user_id) { q += ' AND a.user_id = ?'; params.push(filters.user_id); }
   if (filters.test_code) { q += ' AND a.test_code = ?'; params.push(filters.test_code); }
-  if (filters.group_code) { q += ' AND t.group_code = ?'; params.push(filters.group_code); }
+  if (filters.attempt_id) { q += ' AND aa.attempt_id = ?'; params.push(filters.attempt_id); }
+  q += ' ORDER BY aa.updated_at DESC';
   return db.prepare(q).all(...params);
-}
-
-function listResults(filters = {}) {
-  const db = getDB();
-  // filters: student_email (partial), group_code, test_code, owner_id
-  let q = `SELECT a.id as answer_id, u.id as student_id, u.email as student_email, t.code as test_code, t.name as test_name, t.group_code, t.owner_id, a.created_at
-    FROM answers a
-    JOIN users u ON u.id = a.user_id
-    JOIN tests t ON t.code = a.test_code
-    WHERE 1=1`;
-  const params = [];
-  if (filters.student_email) { q += ' AND u.email LIKE ?'; params.push('%' + filters.student_email + '%'); }
-  if (filters.group_code) { q += ' AND t.group_code = ?'; params.push(filters.group_code); }
-  if (filters.test_code) { q += ' AND t.code = ?'; params.push(filters.test_code); }
-  if (filters.owner_id) { q += ' AND t.owner_id = ?'; params.push(filters.owner_id); }
-  const rows = db.prepare(q).all(...params);
-
-  // compute score for each answer
-  const out = rows.map(r => {
-    const items = db.prepare('SELECT ax.pts_obtained, i.pts as max_pts FROM answerxitem ax JOIN items i ON i.id = ax.item_id WHERE ax.answer_id = ?').all(r.answer_id);
-    let obtained = 0, max = 0;
-    for (const it of items) { obtained += it.pts_obtained; max += it.max_pts; }
-    const pct = max ? Math.round((obtained / max) * 100) : 0;
-    return { answer_id: r.answer_id, student_id: r.student_id, student_email: r.student_email, test_code: r.test_code, test_name: r.test_name, group_code: r.group_code, date: r.created_at, score_pct: pct };
-  });
-
-  return out;
 }
 
 function listTeacherResults(filters = {}) {
 
-  const db = getDB();
+    const db = getDB();
 
-  let q = `
-    SELECT
-      a.id AS answer_id,
-      a.created_at,
+    let q = `
+        SELECT
+            a.id AS attempt_id,
+            a.user_id,
+            u.name AS student_name,
+            u.email AS student_email,
 
-      u.id AS student_id,
-      u.name AS student_name,
-      u.email AS student_email,
+            a.test_code,
+            t.title AS quiz_title,
+            t.group_code,
+            g.name AS group_name,
 
-      t.code AS test_code,
-      t.name AS test_name,
+            a.status,
 
-      g.code AS group_code,
-      g.name AS group_name,
+            a.score,
+            a.max_score,
 
-      t.owner_id
+            ROUND(
+                CASE
+                    WHEN a.max_score > 0
+                    THEN (
+                        a.score * 100.0 /
+                        a.max_score
+                    )
+                    ELSE 0
+                END,
+                2
+            ) AS percentage,
 
-    FROM answers a
+            a.started_at,
+            a.submitted_at,
+            a.graded_at,
+            a.created_at
 
-    JOIN users u
-      ON u.id = a.user_id
+        FROM attempts a
 
-    JOIN tests t
-      ON t.code = a.test_code
+        INNER JOIN tests t
+            ON t.code = a.test_code
 
-    LEFT JOIN groups g
-      ON g.code = t.group_code
+        INNER JOIN users u
+            ON u.id = a.user_id
 
-    WHERE 1=1
-  `;
+        LEFT JOIN groups g
+            ON g.code = t.group_code
 
-  const params = [];
-
-  // only teacher own quizzes
-  if (filters.owner_id) {
-    q += ` AND t.owner_id = ?`;
-    params.push(filters.owner_id);
-  }
-
-  // group filter
-  if (filters.group_code) {
-    q += ` AND g.code = ?`;
-    params.push(filters.group_code);
-  }
-
-  // search filter
-  if (filters.search) {
-
-    q += `
-      AND (
-        u.name LIKE ?
-        OR u.email LIKE ?
-        OR t.name LIKE ?
-      )
+        WHERE 1=1
     `;
 
-    const s = `%${filters.search}%`;
+    const params = [];
 
-    params.push(s, s, s);
-  }
+    /*
+    =========================================
+    OWNER FILTER
+    =========================================
+    */
 
-  q += ` ORDER BY a.created_at DESC`;
+    if (filters.owner_id) {
 
-  const rows = db.prepare(q).all(...params);
+        q += `
+            AND t.owner_id = ?
+        `;
 
-  return rows.map(r => {
-
-    const items = db.prepare(`
-      SELECT
-        ax.pts_obtained,
-        i.pts AS max_pts
-      FROM answerxitem ax
-      JOIN items i
-        ON i.id = ax.item_id
-      WHERE ax.answer_id = ?
-    `).all(r.answer_id);
-
-    let obtained = 0;
-    let max = 0;
-
-    for (const it of items) {
-      obtained += it.pts_obtained || 0;
-      max += it.max_pts || 0;
+        params.push(
+            filters.owner_id
+        );
     }
 
-    const pct = max
-      ? Math.round((obtained * 100) / max)
-      : 0;
+    /*
+    =========================================
+    GROUP FILTER
+    =========================================
+    */
 
-    return {
+    if (filters.group_code) {
 
-      answer_id: r.answer_id,
+        q += `
+            AND t.group_code = ?
+        `;
 
-      student: r.student_name || r.student_email,
+        params.push(
+            filters.group_code
+        );
+    }
 
-      student_email: r.student_email,
+    /*
+    =========================================
+    SEARCH FILTER
+    =========================================
+    */
 
-      quiz: r.test_name,
+    if (filters.search) {
 
-      group: r.group_name || 'Sin grupo',
+        q += `
+            AND (
+                t.title LIKE ?
+                OR u.name LIKE ?
+                OR u.email LIKE ?
+            )
+        `;
 
-      score: pct,
+        const searchLike =
+            `%${filters.search}%`;
 
-      status: pct >= 70
-        ? 'Aprobado'
-        : 'Reprobado',
+        params.push(
+            searchLike,
+            searchLike,
+            searchLike
+        );
+    }
 
-      date: r.created_at,
+    /*
+    =========================================
+    ORDER
+    =========================================
+    */
 
-      time: '--'
-    };
-  });
+    q += `
+        ORDER BY a.created_at DESC
+    `;
+
+    const rows =
+        db.prepare(q).all(...params);
+
+    /*
+    =========================================
+    FORMAT
+    =========================================
+    */
+
+    return rows.map(row => {
+
+        let computedStatus =
+            'Pendiente';
+
+        if (
+            row.status === 'graded'
+        ) {
+
+            computedStatus =
+                row.percentage >= 70
+                    ? 'Aprobado'
+                    : 'Reprobado';
+        }
+
+        else if (
+            row.status === 'submitted'
+        ) {
+
+            computedStatus =
+                'Entregado';
+        }
+
+        else if (
+            row.status === 'in_progress'
+        ) {
+
+            computedStatus =
+                'En progreso';
+        }
+
+        return {
+
+            attempt_id:
+                row.attempt_id,
+
+            user_id:
+                row.user_id,
+
+            student_name:
+                row.student_name,
+
+            student_email:
+                row.student_email,
+
+            test_code:
+                row.test_code,
+
+            quiz_title:
+                row.quiz_title,
+
+            group_code:
+                row.group_code,
+
+            group_name:
+                row.group_name,
+
+            score:
+                row.score || 0,
+
+            max_score:
+                row.max_score || 0,
+
+            percentage:
+                row.percentage || 0,
+
+            status:
+                computedStatus,
+
+            raw_status:
+                row.status,
+
+            started_at:
+                row.started_at,
+
+            submitted_at:
+                row.submitted_at,
+
+            graded_at:
+                row.graded_at,
+
+            created_at:
+                row.created_at
+        };
+    });
 }
 
-module.exports = { createAnswer, addAnswerItem, getAnswer, listAnswers, listResults, listTeacherResults };
+module.exports = { upsertAttemptAnswer, getAttemptAnswers, listAttemptAnswers, listTeacherResults };

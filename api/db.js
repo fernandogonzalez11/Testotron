@@ -5,7 +5,6 @@ let db;
 function initDB(path = './data.sqlite') {
   if (db) return db;
   db = new Database(path);
-  // enforce foreign keys
   db.pragma('foreign_keys = ON');
   return db;
 }
@@ -249,7 +248,7 @@ CREATE TABLE IF NOT EXISTS user_groups (
       // create a fallback admin
       const bcrypt = require('bcrypt');
       const pw = bcrypt.hashSync('admin', 10);
-      const info = d.prepare('INSERT INTO users (email, name, password, role) VALUES (?, ?, ?, ?)').run('admin@local.com', 'admin', '123456', 'admin');
+      const info = d.prepare('INSERT INTO users (email, name, password, role) VALUES (?, ?, ?, ?)').run('admin@local.com', 'admin', pw, 'admin');
       adminId = info.lastInsertRowid;
     }
 

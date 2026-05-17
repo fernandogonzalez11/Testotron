@@ -79,16 +79,12 @@ app.get('/', (req, res) => res.redirect('/auth/login'));
 // Frontend SSR routes
 
 app.use('/auth', require('../ssr/routes/auth')(baseContext));
-
 app.use('/groups', require('../ssr/routes/groups')(baseContext));
-
 app.use('/teacher', require('../ssr/routes/teacher')(baseContext));
-
 app.use('/student', require('../ssr/routes/student')(baseContext));
-
 app.use('/admin', require('../ssr/routes/admin')(baseContext));
-
 app.use('/profile', require('../ssr/routes/profile')(baseContext));
+app.use('/dashboard',require('../ssr/routes/dashboard')(baseContext));
 
 // API Backend
 // Mount API routers under /api
@@ -97,6 +93,12 @@ app.use('/api/logout', logoutRoutes);
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/questions', require('./routes/questions'));
+app.use('/api/templates', require('./routes/templates'));
+app.use('/api/tests', require('./routes/tests'));
+app.use('/api/test-questions', require('./routes/test-questions'));
+app.use('/api/attempts', require('./routes/attempts'));
+app.use('/api/attempt-answers', require('./routes/attempt-answers'));
+app.use('/api/attempts', require('./routes/grading'));
 
 // Note: all business logic has been moved into route handlers/controllers.
 

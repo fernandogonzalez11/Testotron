@@ -6,7 +6,7 @@ module.exports = function(baseContext) {
   const router = express.Router();
 
   router.get(
-    '/tables',
+    '/management',
     (req, res) =>
       controller.adminPage(req, res, baseContext)
   );

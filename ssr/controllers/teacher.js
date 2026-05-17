@@ -1,5 +1,7 @@
 const { getDB } = require('../../api/db');
 const { listGroups } = require('../../api/models/group');
+const { listTeacherResults } = require('../../api/models/attempt-answer');
+
 
 function teacherQuizzesPage(req, res, baseContext) {
 
@@ -264,9 +266,180 @@ function createQuizPage(req, res, baseContext) {
   return res.render('teacher/create_quiz', ctx);
 }
 
+
+function quizzesResultsPage(req, res, baseContext) {
+
+    /*
+    =========================================
+    AUTH
+    =========================================
+    */
+
+    if (!req.user) {
+        return res.redirect('/auth/login');
+    }
+
+    if (
+        req.user.role !== 'teacher' &&
+        req.user.role !== 'admin'
+    ) {
+        return res.redirect('/');
+    }
+
+    /*
+    =========================================
+    FILTERS
+    =========================================
+    */
+
+    const {
+        search = '',
+        group = '',
+        status = ''
+    } = req.query;
+
+    /*
+    =========================================
+    RESULTS
+    =========================================
+    */
+
+    const results =
+        listTeacherResults({
+
+            owner_id:
+                req.user.role === 'admin'
+                    ? null
+                    : req.user.id,
+
+            search: search.trim(),
+
+            group_code:
+                group || null
+        });
+
+    /*
+    =========================================
+    STATUS FILTER
+    =========================================
+    */
+
+    let filteredResults = results;
+
+    if (status) {
+
+        filteredResults =
+            filteredResults.filter(
+                r => r.status === status
+            );
+    }
+
+    /*
+    =========================================
+    TEACHER GROUPS
+    =========================================
+    */
+
+    const groups =
+        listGroups(
+            req.user.role === 'admin'
+                ? {}
+                : {
+                    owner_id: req.user.id
+                }
+        );
+
+    /*
+    =========================================
+    STATS
+    =========================================
+    */
+
+    const totalResults =
+        filteredResults.length;
+
+    const averageScore =
+        totalResults
+            ? Math.round(
+                filteredResults.reduce(
+                    (sum, r) =>
+                        sum + r.percentage,
+                    0
+                ) / totalResults
+            )
+            : 0;
+
+    const approved =
+        filteredResults.filter(
+            r => r.percentage >= 70
+        ).length;
+
+    const approvalRate =
+        totalResults
+            ? Math.round(
+                (approved * 100) /
+                totalResults
+            )
+            : 0;
+
+    const stats = {
+
+        totalResults,
+
+        averageScore,
+
+        approvalRate,
+
+        totalAttempts:
+            totalResults
+    };
+
+    /*
+    =========================================
+    PAGE
+    =========================================
+    */
+
+    const ctx = baseContext(req, {
+
+        pageTitle: 'Resultados',
+
+        active: {
+            results: true
+        },
+
+        locals: {
+
+            pageDescription:
+                'Consulta el rendimiento de los estudiantes',
+
+            filteredResults,
+
+            groups,
+
+            stats,
+
+            filters: {
+
+                search,
+
+                group,
+
+                status
+            }
+        }
+    });
+
+    return res.render(
+        'teacher/results',
+        ctx
+    );
+}
+
 module.exports = {
   teacherQuizzesPage,
   questionsPage,
   templatesPage,
-  createQuizPage
+  createQuizPage,
+  quizzesResultsPage
 };

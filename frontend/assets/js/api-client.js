@@ -60,7 +60,7 @@
   // Fetch current user from API. Will use Authorization header or cookie depending on setup
   async function fetchCurrentUser(){
     try {
-      return await fetchWithAuth('/auth/me');
+      return await fetchWithAuth('api/auth/me');
     } catch (err) {
       return null;
     }
