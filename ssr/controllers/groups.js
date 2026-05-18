@@ -1,4 +1,5 @@
 const groupService = require('../../api/services/group-service');
+const { groupDetail: getGroupDetail } = require('../../api/models/group');
 
 function groupsPage(req, res, baseContext) {
   if (!req.user) return res.redirect('/auth/login');
@@ -12,7 +13,7 @@ function groupsPage(req, res, baseContext) {
   if (req.user.role === 'teacher') {
     groups = groupService.listGroups({ owner_id: req.user.id });
   } else if (req.user.role === 'student') {
-    const db = require('../../api/controllers/db').getDB();
+    const db = require('../../api/db').getDB();
     const memberships = db.prepare(`SELECT group_code FROM user_groups WHERE user_id = ?`).all(req.user.id);
     groups = memberships.map(m => groupService.groupDetail(m.group_code)).filter(Boolean);
   } else if (req.user.role === 'admin') {
@@ -59,8 +60,7 @@ if (!req.user) {
     }
 
     const code = req.params.id;
-
-    const group = groupDetail(code);
+    const group = getGroupDetail(code);
 
     // GROUP NOT FOUND
 

@@ -34,10 +34,16 @@ router.get(
 );
 
 router.post(
-    '/:code/members',
-    requireRole('teacher', 'admin'),
-    requireOwnership('group'),
-    GroupController.addMember
+    '/join',
+    requireRole('teacher', 'admin', 'student'),
+    GroupController.joinGroupByCode
+);
+
+router.post(
+  '/:code/add-user',
+  requireRole('teacher', 'admin'),
+  requireOwnership('group'),
+  GroupController.addMemberByEmail
 );
 
 router.get(
@@ -61,7 +67,7 @@ router.put(
 
 router.delete(
     '/:code',
-    requireRole('admin'),
+    requireRole('teacher', 'admin'),
     GroupController.delete
 );
 

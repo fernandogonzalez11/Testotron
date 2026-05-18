@@ -9,7 +9,12 @@ class GroupController {
         owner_id: req.user.id,
         description: req.body.description || ''
       });
-      return res.status(201).json({ group: g });
+    const wantsJSON = req.headers.accept && req.headers.accept.includes('application/json');
+
+    if (wantsJSON) { return res.status(201).json({ group: g}); }
+
+    return res.redirect('/groups');
+
     } catch (err) {
       return handleError(err, res);
     }
@@ -47,16 +52,170 @@ class GroupController {
     }
   }
 
-  static addMember(req, res) {
-    try {
-      const code = req.params.code;
-      const userId = Number(req.body.user_id || req.body.id);
-      const changes = addMember(code, userId);
-      res.json({ added: !!changes });
-    } catch (err) {
-      return handleError(err, res);
-    }
+static addMember(req, res) {
+
+  try {
+    const code = req.params.code;
+    const userId = Number(req.body.user_id || req.body.id);
+    const changes = addMember(code, userId);
+    if (req.headers.accept?.includes('text/html')) {
+      if (!changes) { return res.redirect('/groups?error=' +
+          encodeURIComponent('Ya perteneces a este grupo'));}
+      return res.redirect(
+        '/groups?success=' +
+        encodeURIComponent(
+          'Te uniste al grupo correctamente'));}
+    return res.json({ added: !!changes });
+  } catch (err) {
+    return handleError(err, res);
   }
+}
+
+static addMemberByEmail(req, res) {
+
+  try {
+
+    // =========================
+    // DATA
+    // =========================
+
+    const code = String(
+      req.params.code || ''
+    )
+    .trim()
+    .toUpperCase();
+
+    const email = String(
+      req.body.email || ''
+    )
+    .trim()
+    .toLowerCase();
+
+    // =========================
+    // VALIDATION
+    // =========================
+
+    if (!code) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Código de grupo inválido'
+        )
+      );
+    }
+
+    if (!email) {
+
+      return res.redirect(
+        `/groups/${code}?error=` +
+        encodeURIComponent(
+          'Correo inválido'
+        )
+      );
+    }
+
+    // =========================
+    // GROUP EXISTS
+    // =========================
+
+    const group = getGroup(code);
+
+    if (!group) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Grupo no encontrado'
+        )
+      );
+    }
+
+    // =========================
+    // ADD MEMBER
+    // =========================
+
+    const user = addMemberByEmail(
+      code,
+      email
+    );
+
+    // =========================
+    // SUCCESS
+    // =========================
+
+    return res.redirect(
+      `/groups/${code}?success=` +
+      encodeURIComponent(
+        `${user.name} fue agregado correctamente`
+      )
+    );
+
+  } catch (err) {
+
+    return res.redirect(
+      `/groups/${req.params.code}?error=` +
+      encodeURIComponent(
+        err.message || 'No se pudo agregar el usuario'
+      )
+    );
+  }
+}
+
+static joinGroupByCode(req, res) {
+
+  try {
+    if (!req.user) {
+
+      return res.redirect('/auth/login');
+    }
+
+    if (req.user.role !== 'student') {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Solo estudiantes pueden ingresar a grupos'
+        )
+      );
+    }
+
+    const code = String(
+      req.body.code || ''
+    )
+    .trim()
+    .toUpperCase();
+
+    if (!code) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Código inválido'
+        )
+      );
+    }
+    const group = getGroup(code);
+
+    if (!group) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Grupo no encontrado'
+        )
+      );
+    }
+    req.params.code = code;
+    req.body.user_id = req.user.id;
+
+    return GroupController.addMember(req, res);
+
+  } catch (err) {
+
+    return handleError(err, res);
+  }
+}
 
   static members(req, res) {
     try {
@@ -93,7 +252,11 @@ class GroupController {
     try {
       const code = req.params.code;
       const changes = deleteGroup(code);
-      res.json({ deleted: changes });
+     
+      if (!changes) { return handleError( new Error('Grupo no encontrado'), res ); }
+      
+      return res.json({ success: true });
+
     } catch (err) {
       return handleError(err, res);
     }

@@ -14,15 +14,26 @@ function adminPage(req, res, baseContext)  {
       {
         name: 'Usuarios',
         headers: ['ID', 'Nombre', 'Correo', 'Rol', 'Creado'],
-        rows: users.map(u => [u.id, u.name, u.email, u.role, u.created_at])
+        rows: users.map(u => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  created_at: u.created_at
+}))
       },
       {
         name: 'Cuestionarios',
         headers: ['Código', 'Nombre', 'Grupo', 'Propietario'],
-        rows: tests.map(t => [t.code, t.name, t.group_code || '', t.owner_id || ''])
+        rows: tests.map(t => ({
+  code: t.code,
+  name: t.name,
+  group: t.group_code || '',
+  owner: t.owner_id || ''
+}))
       }
     ];
-    const ctx = baseContext(req, { pageTitle: 'Panel de administración', active: { tables: true }, locals: { stats, tables } });
+    const ctx = baseContext(req, { pageTitle: 'Panel de administración', user: req.user, active: { tables: true, management: true }, locals: { stats, tables } });
     res.render('admin/management', ctx);
 };
 

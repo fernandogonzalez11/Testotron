@@ -34,6 +34,7 @@ app.engine('.hbs', engine({
     partialsDir: path.join(__dirname, '../frontend/components'),
     helpers: {
         eq: (a, b) => a === b,
+        or: function () { return Array.from(arguments).slice(0, -1).some(Boolean);},
         ifEquals: function (arg1, arg2, options) { return (arg1 === arg2) ? options.fn(this) : options.inverse(this); }
     }
 }));

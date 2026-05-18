@@ -8,7 +8,7 @@ module.exports = function(baseContext) {
   router.get(
     '/quizzes',
     (req, res) =>
-      controller.teacherQuizzesPage(req, res, baseContext)
+      controller.studentQuizzesPage(req, res, baseContext)
   );
 
   return router;
