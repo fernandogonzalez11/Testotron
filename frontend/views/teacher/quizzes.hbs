@@ -6,8 +6,8 @@
     </div>
     <div class="d-flex gap-2">
         <button class="btn btn-outline-secondary">Importar cuestionario</button>
-        <a href="/teacher/questions" class="btn btn-outline-secondary">Banco de preguntas</button>
-        <a href="/teacher/templates" class="btn btn-outline-secondary">Plantillas</a>
+        <a href="/teacher/questions" class="btn btn-outline-secondary">Banco de preguntas</a>
+	<a href="/teacher/templates" class="btn btn-outline-secondary">Plantillas</a>
         <a href="/teacher/quizzes/create" class="btn bg-primary text-white d-flex align-items-center">
             <i class="bi bi-plus-lg me-2" aria-hidden="true"></i> Crear cuestionario
         </a>
@@ -81,7 +81,13 @@
                     <th scope="col">Respuestas</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Código</th>
-                    <th scope="col" class="text-end pe-4">Acciones</th>
+<th
+  scope="col"
+  class="text-end pe-4"
+  style="width: 260px;"
+>
+  Acciones
+</th>
                 </tr>
             </thead>
             <tbody>
@@ -102,7 +108,7 @@
                         {{/if}}
                     </td>
                     <td class="font-monospace fw-bold">{{this.code}}</td>
-                    <td class="pe-4 text-end">
+                    <td class="pe-4 text-end" style="min-width: 220px;">
                         {{> quiz-actions this}}
                     </td>
                 </tr>
@@ -118,3 +124,46 @@
         </table>
     </div>
 </div>
+<script>
+
+document
+  .querySelectorAll('.delete-quiz-btn')
+  .forEach(btn => {
+
+    btn.addEventListener('click', async () => {
+
+      const code =
+        btn.dataset.code;
+
+      const ok = confirm(
+        '¿Eliminar cuestionario?'
+      );
+
+      if (!ok) {
+        return;
+      }
+
+      const res =
+        await fetch(
+          `/api/tests/${code}`,
+          {
+            method: 'DELETE'
+          }
+        );
+
+      if (!res.ok) {
+
+        alert(
+          'No se pudo eliminar'
+        );
+
+        return;
+      }
+
+      location.reload();
+
+    });
+
+  });
+
+</script>

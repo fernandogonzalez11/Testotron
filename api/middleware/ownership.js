@@ -1,4 +1,6 @@
-const { getDB } = require('../controllers/db');
+const { getDB } = require('../db');
+const groupService = require('../services/group-service');
+const testModel = require('../models/test');
 
 function requireOwnership(resource) {
   return function (req, res, next) {
@@ -9,23 +11,26 @@ function requireOwnership(resource) {
       if (user.role === 'admin') return next();
 
       let ownerId = null;
+
       if (resource === 'group') {
         const code = req.params.code || req.body.code;
-        const r = db.prepare('SELECT owner_id FROM groups WHERE code = ?').get(code);
-        if (!r) return res.status(404).json({ error: 'Not found' });
-        ownerId = r.owner_id;
+        const g = groupService.getGroup(code);
+        if (!g) return res.status(404).json({ error: 'Not found' });
+        ownerId = g.owner_id;
       } else if (resource === 'test') {
         const code = req.params.code || req.body.code || req.params.test_code || req.body.test_code;
-        const r = db.prepare('SELECT owner_id FROM tests WHERE code = ?').get(code);
-        if (!r) return res.status(404).json({ error: 'Not found' });
-        ownerId = r.owner_id;
+        const t = testModel.getTest(code);
+        if (!t) return res.status(404).json({ error: 'Not found' });
+        ownerId = t.owner_id;
       } else if (resource === 'template') {
         const id = Number(req.params.id || req.body.id);
-        const r = db.prepare('SELECT user_id as owner_id FROM templates WHERE id = ?').get(id);
+        // template table is `quiz_templates` -> use DB directly
+        const r = db.prepare('SELECT owner_id FROM quiz_templates WHERE id = ?').get(id);
         if (!r) return res.status(404).json({ error: 'Not found' });
         ownerId = r.owner_id;
       } else if (resource === 'section') {
-        const id = Number(req.params.id || req.body.id || req.params.section_id || req.body.section_id);        const r = db.prepare('SELECT t.owner_id FROM sections s JOIN tests t ON t.code = s.test_code WHERE s.id = ?').get(id);
+        const id = Number(req.params.id || req.body.id || req.params.section_id || req.body.section_id);
+        const r = db.prepare('SELECT t.owner_id FROM sections s JOIN tests t ON t.code = s.test_code WHERE s.id = ?').get(id);
         if (!r) return res.status(404).json({ error: 'Not found' });
         ownerId = r.owner_id;
       } else if (resource === 'item') {

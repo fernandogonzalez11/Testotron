@@ -4,22 +4,25 @@
       {{#each headers}}
         <th>{{this}}</th>
       {{/each}}
+
       {{#if actions}}
         <th>Acciones</th>
       {{/if}}
     </tr>
   </thead>
+
   <tbody>
     {{#each rows}}
       <tr>
-        {{#each ../headers}}
-          <td>{{lookup ../this this}}</td>
+        {{#each this}}
+          <td>{{this}}</td>
         {{/each}}
+
         {{#if ../actions}}
-          <td>
+          <td class="text-nowrap">
             {{#each ../actions}}
-              <a href="{{url}}" class="btn btn-sm btn-{{color}}" aria-label="{{label}}">
-                <i class="bi {{icon}}"></i> {{label}}
+              <a href="{{this.url}}" class="btn btn-sm btn-{{this.color}}" aria-label="{{this.label}}">
+                <i class="bi {{this.icon}}"></i> {{this.label}}
               </a>
             {{/each}}
           </td>

@@ -35,7 +35,7 @@
 
   // public API
   async function login(email, password){
-    const res = await fetch(BASE + '/auth/login', {
+    const res = await fetch(BASE + '/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ email, password })
@@ -48,7 +48,7 @@
   }
 
   async function register(name, email, password, role){
-    const res = await fetch(BASE + '/auth/register', {
+    const res = await fetch(BASE + '/api/auth/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({name, email, password, role })
@@ -60,7 +60,7 @@
   // Fetch current user from API. Will use Authorization header or cookie depending on setup
   async function fetchCurrentUser(){
     try {
-      return await fetchWithAuth('/auth/me');
+      return await fetchWithAuth('api/auth/me');
     } catch (err) {
       return null;
     }

@@ -5,6 +5,9 @@ const { UserController } = require('../controllers/user');
 
 router.use(authMiddleware);
 
+// PATCH /api/users - update current user (profile form)
+router.patch('/', UserController.updateMe);
+
 // GET /users - list (admin/teacher)
 router.get('/', requireRole('admin','teacher'), UserController.list);
 // GET /users/:id

@@ -24,4 +24,63 @@
       {{/each}}
     </div>
   </section>
+
+<script>
+
+document
+  .querySelectorAll(
+    '.delete-template-btn'
+  )
+  .forEach(btn => {
+
+    btn.addEventListener(
+      'click',
+      async () => {
+
+        const id =
+          btn.dataset.id;
+
+        const ok = confirm(
+          '¿Eliminar plantilla?'
+        );
+
+        if (!ok) {
+          return;
+        }
+
+        try {
+
+          const res =
+            await fetch(
+              `/api/templates/${id}`,
+              {
+                method: 'DELETE'
+              }
+            );
+
+          if (!res.ok) {
+
+            alert(
+              'No se pudo eliminar'
+            );
+
+            return;
+          }
+
+          location.reload();
+
+        } catch (err) {
+
+          console.error(err);
+
+          alert(
+            'Error eliminando'
+          );
+        }
+      }
+    );
+  });
+
+</script>
+
 </main>

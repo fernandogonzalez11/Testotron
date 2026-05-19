@@ -1,22 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  const typeSelect = document.getElementById('questionType');
-  const dynamicContainer = document.getElementById('dynamicQuestionFields');
-  const form = document.getElementById('question-modal-form');
+  let editingQuestionId = null;
 
-  renderFields(typeSelect.value);
+  const typeSelect =
+    document.getElementById('questionType');
 
-  typeSelect.addEventListener('change', () => {
-    renderFields(typeSelect.value);
-  });
+  const dynamicContainer =
+    document.getElementById('dynamicQuestionFields');
 
-  function renderFields(type) {
+  const form =
+    document.getElementById('question-modal-form');
+
+  /*
+  =========================================
+  RENDER FIELDS
+  =========================================
+  */
+
+  function renderFields(
+    type,
+    metadata = {},
+    correctAnswer = null
+  ) {
 
     dynamicContainer.innerHTML = '';
 
     /*
     =========================================
-    MULTIPLE CHOICE / MULTIPLE RESPONSE
+    MULTIPLE CHOICE / RESPONSE
     =========================================
     */
 
@@ -25,9 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
       type === 'multiple_response'
     ) {
 
-      const wrapper = document.createElement('div');
-
-      wrapper.innerHTML = `
+      dynamicContainer.innerHTML = `
         <label class="form-label">
           Opciones
         </label>
@@ -44,36 +53,40 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       `;
 
-      dynamicContainer.appendChild(wrapper);
-
       const optionsContainer =
         document.getElementById('optionsContainer');
 
       const addOptionBtn =
         document.getElementById('addOptionBtn');
 
-      function addOption() {
+      function addOption(
+        text = '',
+        checked = false
+      ) {
 
-        const optionDiv = document.createElement('div');
+        const optionDiv =
+          document.createElement('div');
 
         optionDiv.className =
           'input-group mb-2';
 
         optionDiv.innerHTML = `
           <div class="input-group-text">
-
             <input
               class="form-check-input mt-0 correct-option"
-              type="${type === 'multiple_choice' ? 'radio' : 'checkbox'}"
+              type="${type === 'multiple_choice'
+                ? 'radio'
+                : 'checkbox'}"
               name="correctOption"
+              ${checked ? 'checked' : ''}
             >
-
           </div>
 
           <input
             type="text"
             class="form-control option-text"
             placeholder="Texto de opción"
+            value="${text}"
           >
 
           <button
@@ -93,10 +106,54 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       }
 
-      addOption();
-      addOption();
+      const options =
+        metadata.options || [];
 
-      addOptionBtn.addEventListener('click', addOption);
+      /*
+      =========================================
+      EDIT MODE
+      =========================================
+      */
+
+      if (options.length > 0) {
+
+        options.forEach((option, index) => {
+
+          let checked = false;
+
+          if (type === 'multiple_choice') {
+
+            checked =
+              correctAnswer === index;
+          }
+
+          if (type === 'multiple_response') {
+
+            checked =
+              Array.isArray(correctAnswer) &&
+              correctAnswer.includes(index);
+          }
+
+          addOption(option, checked);
+
+        });
+
+      } else {
+
+        /*
+        =========================================
+        CREATE MODE
+        =========================================
+        */
+
+        addOption();
+        addOption();
+      }
+
+      addOptionBtn.addEventListener(
+        'click',
+        () => addOption()
+      );
     }
 
     /*
@@ -116,11 +173,17 @@ document.addEventListener('DOMContentLoaded', () => {
           id="trueFalseAnswer"
           class="form-select"
         >
-          <option value="true">
+          <option
+            value="true"
+            ${correctAnswer === true ? 'selected' : ''}
+          >
             Verdadero
           </option>
 
-          <option value="false">
+          <option
+            value="false"
+            ${correctAnswer === false ? 'selected' : ''}
+          >
             Falso
           </option>
         </select>
@@ -144,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type="text"
           id="shortAnswer"
           class="form-control"
+          value="${correctAnswer || ''}"
         >
       `;
     }
@@ -165,22 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
           type="number"
           id="numericAnswer"
           class="form-control"
+          value="${correctAnswer || ''}"
         >
-      `;
-    }
-
-    /*
-    =========================================
-    ESSAY
-    =========================================
-    */
-
-    if (type === 'essay') {
-
-      dynamicContainer.innerHTML = `
-        <div class="alert alert-info mb-0">
-          Las preguntas tipo ensayo serán calificadas manualmente.
-        </div>
       `;
     }
 
@@ -201,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type="text"
           id="fillBlankAnswer"
           class="form-control"
+          value="${correctAnswer || ''}"
         >
       `;
     }
@@ -230,16 +281,25 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       const matchingContainer =
-        document.getElementById('matchingContainer');
+        document.getElementById(
+          'matchingContainer'
+        );
 
       const addMatchBtn =
-        document.getElementById('addMatchBtn');
+        document.getElementById(
+          'addMatchBtn'
+        );
 
-      function addMatch() {
+      function addMatch(
+        left = '',
+        right = ''
+      ) {
 
-        const row = document.createElement('div');
+        const row =
+          document.createElement('div');
 
-        row.className = 'row g-2 mb-2';
+        row.className =
+          'row g-2 mb-2';
 
         row.innerHTML = `
           <div class="col">
@@ -247,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
               type="text"
               class="form-control match-left"
               placeholder="Concepto"
+              value="${left}"
             >
           </div>
 
@@ -255,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
               type="text"
               class="form-control match-right"
               placeholder="Respuesta"
+              value="${right}"
             >
           </div>
         `;
@@ -262,133 +324,537 @@ document.addEventListener('DOMContentLoaded', () => {
         matchingContainer.appendChild(row);
       }
 
-      addMatch();
-      addMatchBtn.addEventListener('click', addMatch);
+      const pairs =
+        metadata.pairs || [];
+
+      if (pairs.length > 0) {
+
+        pairs.forEach(pair => {
+
+          addMatch(
+            pair.left,
+            pair.right
+          );
+
+        });
+
+      } else {
+
+        addMatch();
+      }
+
+      addMatchBtn.addEventListener(
+        'click',
+        () => addMatch()
+      );
     }
 
+    /*
+    =========================================
+    ESSAY
+    =========================================
+    */
+
+    if (type === 'essay') {
+
+      dynamicContainer.innerHTML = `
+        <div class="alert alert-info mb-0">
+          Las preguntas tipo ensayo serán calificadas manualmente.
+        </div>
+      `;
+    }
   }
 
   /*
   =========================================
-  SAVE QUESTION
+  INITIAL RENDER
   =========================================
   */
 
-  form.addEventListener('submit', async (e) => {
+  renderFields(typeSelect.value);
 
-    e.preventDefault();
+  typeSelect.addEventListener(
+    'change',
+    () => renderFields(typeSelect.value)
+  );
 
-    const type = typeSelect.value;
+  /*
+  =========================================
+  OPEN CREATE MODAL
+  =========================================
+  */
 
-    const payload = {
-      question: document
-        .getElementById('questionText')
-        .value
-        .trim(),
+  window.openCreateQuestionModal =
+    function() {
 
-      type,
+      editingQuestionId = null;
 
-      pts: Number(
-        document.getElementById('questionPoints').value
-      ),
+      form.reset();
+	
+      typeSelect.value =  'multiple_choice';
 
-      config: {}
+      renderFields(typeSelect.value);
+
+
+      document.getElementById(
+  'saveToBank'
+).checked = true;
+
+
+      document.getElementById(
+        'questionModalLabel'
+      ).innerText =
+        'Añadir pregunta';
+
+      const modal =
+        new bootstrap.Modal(
+          document.getElementById(
+            'questionModal'
+          )
+        );
+
+      modal.show();
     };
 
-    /*
-    =========================================
-    EXTRACT DATA
-    =========================================
-    */
+  /*
+  =========================================
+  EDIT QUESTION
+  =========================================
+  */
 
-    if (
-      type === 'multiple_choice' ||
-      type === 'multiple_response'
-    ) {
+  window.editQuestion =
+    async function(id) {
 
-      const options = [];
+      try {
 
-      document.querySelectorAll('#optionsContainer .input-group')
-        .forEach((row) => {
+        const res =
+          await fetch(
+            `/api/questions/${id}`
+          );
 
-          options.push({
-            text: row.querySelector('.option-text').value,
-            correct: row.querySelector('.correct-option').checked
-          });
+        if (!res.ok) {
 
-        });
+          alert(
+            'No se pudo cargar la pregunta'
+          );
 
-      payload.config.options = options;
-    }
+          return;
+        }
 
-    if (type === 'true_false') {
+        const data =
+          await res.json();
 
-      payload.config.answer =
-        document.getElementById('trueFalseAnswer').value;
-    }
+        const q =
+          data.question;
 
-    if (type === 'short_answer') {
+        editingQuestionId = id;
 
-      payload.config.answer =
-        document.getElementById('shortAnswer').value;
-    }
+        document.getElementById(
+          'questionText'
+        ).value =
+          q.question || '';
 
-    if (type === 'fill_blank') {
+        document.getElementById(
+          'questionType'
+        ).value =
+          q.type || '';
 
-      payload.config.answer =
-        document.getElementById('fillBlankAnswer').value;
-    }
+        document.getElementById(
+          'questionCategory'
+        ).value =
+          q.category || '';
 
-    if (type === 'numeric') {
+        document.getElementById(
+          'questionDifficulty'
+        ).value =
+          q.difficulty || 'medium';
 
-      payload.config.answer =
-        Number(
-          document.getElementById('numericAnswer').value
+        /*
+        =====================================
+        RENDER METADATA
+        =====================================
+        */
+
+        renderFields(
+          q.type,
+          q.metadata,
+          q.correct_answer
         );
+
+        document.getElementById(
+          'questionModalLabel'
+        ).innerText =
+          'Editar pregunta';
+
+        const modal =
+          new bootstrap.Modal(
+            document.getElementById(
+              'questionModal'
+            )
+          );
+
+        modal.show();
+
+      } catch (err) {
+
+        console.error(err);
+
+        alert(
+          'Error cargando pregunta'
+        );
+      }
+    };
+
+  /*
+  =========================================
+  DELETE QUESTION
+  =========================================
+  */
+
+  window.deleteQuestion =
+    async function(id) {
+
+      const ok = confirm(
+        '¿Seguro que deseas eliminar esta pregunta?'
+      );
+
+      if (!ok) {
+        return;
+      }
+
+      try {
+
+        const res =
+          await fetch(
+            `/api/questions/${id}`,
+            {
+              method: 'DELETE'
+            }
+          );
+
+if (res.ok) {
+
+document.dispatchEvent(
+  new CustomEvent(
+    'question:deleted',
+    {
+      detail: { id }
     }
+  )
+);
 
-    if (type === 'matching') {
+  return;
+}
 
-      const pairs = [];
+        alert(
+          'No se pudo eliminar la pregunta'
+        );
 
-      document.querySelectorAll('#matchingContainer .row')
-        .forEach((row) => {
+      } catch (err) {
 
-          pairs.push({
-            left: row.querySelector('.match-left').value,
-            right: row.querySelector('.match-right').value
+        console.error(err);
+
+        alert(
+          'Error eliminando pregunta'
+        );
+      }
+    };
+
+  /*
+  =========================================
+  SUBMIT
+  =========================================
+  */
+
+  form.onsubmit =
+    async function(e) {
+
+      e.preventDefault();
+
+      const type =
+        typeSelect.value;
+
+      const payload = {
+
+        question:
+          document.getElementById(
+            'questionText'
+          ).value.trim(),
+
+        type,
+	
+	source_type:
+    document.getElementById(
+      'saveToBank'
+    ).checked
+      ? 'bank'
+      : 'quiz',
+
+        category:
+          document.getElementById(
+            'questionCategory'
+          ).value,
+
+        difficulty:
+          document.getElementById(
+            'questionDifficulty'
+          ).value,
+
+        metadata: {},
+
+        correct_answer: null
+      };
+
+      /*
+      =====================================
+      MULTIPLE CHOICE / RESPONSE
+      =====================================
+      */
+
+      if (
+        type === 'multiple_choice' ||
+        type === 'multiple_response'
+      ) {
+
+        const options = [];
+
+        const correctAnswers = [];
+
+        document
+          .querySelectorAll(
+            '#optionsContainer .input-group'
+          )
+          .forEach((row, index) => {
+
+            const text =
+              row.querySelector(
+                '.option-text'
+              ).value.trim();
+
+            const checked =
+              row.querySelector(
+                '.correct-option'
+              ).checked;
+
+            options.push(text);
+
+            if (checked) {
+              correctAnswers.push(index);
+            }
+
           });
 
-        });
+        payload.metadata.options =
+          options;
 
-      payload.config.pairs = pairs;
+        payload.correct_answer =
+          type === 'multiple_choice'
+            ? correctAnswers[0]
+            : correctAnswers;
+      }
+
+      /*
+      =====================================
+      TRUE FALSE
+      =====================================
+      */
+
+      if (type === 'true_false') {
+
+        payload.correct_answer =
+          document.getElementById(
+            'trueFalseAnswer'
+          ).value === 'true';
+      }
+
+      /*
+      =====================================
+      SHORT ANSWER
+      =====================================
+      */
+
+      if (type === 'short_answer') {
+
+        payload.correct_answer =
+          document.getElementById(
+            'shortAnswer'
+          ).value.trim();
+      }
+
+      /*
+      =====================================
+      NUMERIC
+      =====================================
+      */
+
+      if (type === 'numeric') {
+
+        payload.correct_answer =
+          Number(
+            document.getElementById(
+              'numericAnswer'
+            ).value
+          );
+      }
+
+      /*
+      =====================================
+      FILL BLANK
+      =====================================
+      */
+
+      if (type === 'fill_blank') {
+
+        payload.correct_answer =
+          document.getElementById(
+            'fillBlankAnswer'
+          ).value.trim();
+      }
+
+      /*
+      =====================================
+      MATCHING
+      =====================================
+      */
+
+      if (type === 'matching') {
+
+        const pairs = [];
+
+        document
+          .querySelectorAll(
+            '#matchingContainer .row'
+          )
+          .forEach((row) => {
+
+            pairs.push({
+
+              left:
+                row.querySelector(
+                  '.match-left'
+                ).value,
+
+              right:
+                row.querySelector(
+                  '.match-right'
+                ).value
+
+            });
+
+          });
+
+        payload.metadata.pairs =
+          pairs;
+
+        payload.correct_answer =
+          pairs;
+      }
+
+      let url =
+        '/api/questions';
+
+      let method =
+        'POST';
+
+      if (editingQuestionId) {
+
+        url =
+          `/api/questions/${editingQuestionId}`;
+
+        method =
+          'PATCH';
+      }
+
+      try {
+
+        const res =
+          await fetch(
+            url,
+            {
+              method,
+
+              headers: {
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify(payload)
+            }
+          );
+
+        if (res.ok) {
+
+const savedQuestion = await res.json();
+
+console.log(savedQuestion);
+
+document.dispatchEvent(
+  new CustomEvent(
+    'question:saved',
+    {
+      detail: {
+        question_id:
+          savedQuestion.question.id,
+
+        question:
+          savedQuestion.question.question,
+
+        type:
+          savedQuestion.question.type,
+
+        metadata:
+          savedQuestion.question.metadata,
+
+        correct_answer:
+          savedQuestion.question.correct_answer,
+
+        category:
+          savedQuestion.question.category,
+
+	difficulty:
+	  savedQuestion.question.difficulty,
+
+        pts: 1
+      }
     }
+  )
+);
 
-    /*
-    =========================================
-    SEND
-    =========================================
-    */
+const modalEl =
+  document.getElementById(
+    'questionModal'
+  );
 
-    const res = await fetch('/api/questions', {
+bootstrap.Modal
+  .getOrCreateInstance(
+    modalEl
+  )
+  .hide();
 
-      method: 'POST',
+  form.reset();
 
-      headers: {
-        'Content-Type': 'application/json'
-      },
+  editingQuestionId = null;
 
-      body: JSON.stringify(payload)
-    });
+renderFields(
+    'multiple_choice'
+  );
 
-    const data = await res.json();
+          return;
+        }
 
-    if (!res.ok) {
-      alert(data.error || 'Error');
-      return;
-    }
+        alert(
+          'No se pudo guardar la pregunta'
+        );
 
-    window.location.reload();
-  });
+      } catch (err) {
+
+        console.error(err);
+
+        alert(
+          'Error guardando pregunta'
+        );
+      }
+    };
 
 });

@@ -1,95 +1,321 @@
-const { z } = require('zod');
-const { createGroup, getGroup, updateGroup, deleteGroup, listGroups, addMember, removeMember, listMembers, groupDetail } = require('../models/group');
+const { createGroup, getGroup, listGroups, groupDetail, addMember, removeMember, listMembers, updateGroup, deleteGroup, addMemberByEmail } = require('../models/group');
 const { handleError } = require('./utils');
-
-const schemaCreate = z.object({ name: z.string().min(1), code: z.string().optional() });
 
 class GroupController {
   static create(req, res) {
     try {
-      const data = schemaCreate.parse(req.body);
-      // enforce owner from auth
-      const owner_id = req.user && req.user.id;
-      const g = createGroup(Object.assign({}, data, { owner_id }));
-      res.status(201).json({ group: g });
+      const g = createGroup({
+        name: req.body.name,
+        owner_id: req.user.id,
+        description: req.body.description || ''
+      });
+    const wantsJSON = req.headers.accept && req.headers.accept.includes('application/json');
+
+    if (wantsJSON) { return res.status(201).json({ group: g}); }
+
+    return res.redirect('/groups');
+
     } catch (err) {
-      handleError(err, res);
+      return handleError(err, res);
     }
   }
 
+static list(req, res) {
+
+  try {
+
+    const owner =
+      req.user.role === 'teacher'
+        ? req.user.id
+        : req.query.owner_id
+          ? Number(req.query.owner_id)
+          : undefined;
+
+    const rows = listGroups({
+      owner_id: owner
+    });
+
+    res.json({
+      groups: rows
+    });
+
+  } catch (err) {
+
+    return handleError(err, res);
+  }
+}
+
   static get(req, res) {
     try {
-      const g = getGroup(req.params.code);
+      const code = req.params.code;
+      const g = getGroup(code);
       if (!g) return res.status(404).json({ error: 'Not found' });
-      if (req.user.role === 'teacher' && g.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
       res.json({ group: g });
     } catch (err) {
-      handleError(err, res);
+      return handleError(err, res);
     }
   }
 
   static detail(req, res) {
     try {
-      const d = groupDetail(req.params.code);
-      if (!d) return res.status(404).json({ error: 'Not found' });
-      if (req.user.role === 'teacher' && d.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
-      res.json({ group: d });
-    } catch (err) { handleError(err, res); }
-  }
-
-  static list(req, res) {
-    try {
-      if (req.user.role === 'teacher') {
-        const gs = listGroups({ owner_id: req.user.id });
-        return res.json({ groups: gs });
-      }
-      const gs = listGroups();
-      res.json({ groups: gs });
+      const code = req.params.code;
+      const g = groupDetail(code);
+      if (!g) return res.status(404).json({ error: 'Not found' });
+      res.json({ group: g });
     } catch (err) {
-      handleError(err, res);
+      return handleError(err, res);
     }
   }
 
-  static addMember(req, res) {
+static addMember(req, res) {
+
+  try {
+    const code = req.params.code;
+    const userId = Number(req.body.user_id || req.body.id);
+    const changes = addMember(code, userId);
+    if (req.headers.accept?.includes('text/html')) {
+      if (!changes) { return res.redirect('/groups?error=' +
+          encodeURIComponent('Ya perteneces a este grupo'));}
+      return res.redirect(
+        '/groups?success=' +
+        encodeURIComponent(
+          'Te uniste al grupo correctamente'));}
+    return res.json({ added: !!changes });
+  } catch (err) {
+    return handleError(err, res);
+  }
+}
+
+static addMemberByEmail(req, res) {
+
+  try {
+
+    // =========================
+    // DATA
+    // =========================
+
+    const code = String(
+      req.params.code || ''
+    )
+    .trim()
+    .toUpperCase();
+
+    const email = String(
+      req.body.email || ''
+    )
+    .trim()
+    .toLowerCase();
+
+    // =========================
+    // VALIDATION
+    // =========================
+
+    if (!code) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Código de grupo inválido'
+        )
+      );
+    }
+
+    if (!email) {
+
+      return res.redirect(
+        `/groups/${code}?error=` +
+        encodeURIComponent(
+          'Correo inválido'
+        )
+      );
+    }
+
+    // =========================
+    // GROUP EXISTS
+    // =========================
+
+    const group = getGroup(code);
+
+    if (!group) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Grupo no encontrado'
+        )
+      );
+    }
+
+    // =========================
+    // ADD MEMBER
+    // =========================
+
+    const user = addMemberByEmail(
+      code,
+      email
+    );
+
+    // =========================
+    // SUCCESS
+    // =========================
+
+    return res.redirect(
+      `/groups/${code}?success=` +
+      encodeURIComponent(
+        `${user.name} fue agregado correctamente`
+      )
+    );
+
+  } catch (err) {
+
+    return res.redirect(
+      `/groups/${req.params.code}?error=` +
+      encodeURIComponent(
+        err.message || 'No se pudo agregar el usuario'
+      )
+    );
+  }
+}
+
+static joinGroupByCode(req, res) {
+
+  try {
+    if (!req.user) {
+
+      return res.redirect('/auth/login');
+    }
+
+    if (req.user.role !== 'student') {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Solo estudiantes pueden ingresar a grupos'
+        )
+      );
+    }
+
+    const code = String(
+      req.body.code || ''
+    )
+    .trim()
+    .toUpperCase();
+
+    if (!code) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Código inválido'
+        )
+      );
+    }
+    const group = getGroup(code);
+
+    if (!group) {
+
+      return res.redirect(
+        '/groups?error=' +
+        encodeURIComponent(
+          'Grupo no encontrado'
+        )
+      );
+    }
+    req.params.code = code;
+    req.body.user_id = req.user.id;
+
+    return GroupController.addMember(req, res);
+
+  } catch (err) {
+
+    return handleError(err, res);
+  }
+}
+
+  static members(req, res) {
     try {
       const code = req.params.code;
-      const user_id = Number(req.body.user_id);
-      const changes = addMember(code, user_id);
-      res.json({ added: changes });
-    } catch (err) { handleError(err, res); }
+      const members = listMembers(code);
+      res.json({ members });
+    } catch (err) {
+      return handleError(err, res);
+    }
   }
 
   static removeMember(req, res) {
     try {
       const code = req.params.code;
-      const user_id = Number(req.body.user_id);
-      const changes = removeMember(code, user_id);
-      res.json({ removed: changes });
-    } catch (err) { handleError(err, res); }
-  }
+      const userId = Number(req.body.user_id || req.body.id);
+      const changes = removeMember(code, userId);
+      
+if (
+  req.headers.accept?.includes('text/html')
+) {
 
-  static members(req, res) {
-    try {
-      const m = listMembers(req.params.code);
-      res.json({ members: m });
-    } catch (err) { handleError(err, res); }
-  }
+  return res.redirect(
+    `/groups/${code}?success=` +
+    encodeURIComponent(
+      'Usuario eliminado del grupo'
+    )
+  );
+}
 
-  static update(req, res) {
-    try {
-      const changes = updateGroup(req.params.code, req.body);
-      res.json({ updated: changes });
+return res.json({
+  removed: !!changes
+});
+
     } catch (err) {
-      handleError(err, res);
+      return handleError(err, res);
     }
   }
 
+static update(req, res) {
+
+  try {
+
+    const code = req.params.code;
+
+    const changes = updateGroup(
+      code,
+      {
+        name: req.body.name,
+        description: req.body.description
+      }
+    );
+
+    if (
+      req.headers.accept?.includes('text/html')
+    ) {
+
+      return res.redirect(
+        `/groups/${code}?success=` +
+        encodeURIComponent(
+          'Grupo actualizado correctamente'
+        )
+      );
+    }
+
+    return res.json({
+      updated: !!changes
+    });
+
+  } catch (err) {
+
+    return handleError(err, res);
+  }
+}
+
   static delete(req, res) {
     try {
-      const deleted = deleteGroup(req.params.code);
-      res.json({ deleted });
+      const code = req.params.code;
+      const changes = deleteGroup(code);
+     
+      if (!changes) { return handleError( new Error('Grupo no encontrado'), res ); }
+      
+      return res.json({ success: true });
+
     } catch (err) {
-      handleError(err, res);
+      return handleError(err, res);
     }
   }
 }

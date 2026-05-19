@@ -2,7 +2,42 @@
   <header class="mb-4">
     <h1 class="h3 fw-bold">{{group.name}}</h1>
     <p class="text-muted">Código de acceso: {{group.code}}</p>
+    <p class="text-muted mb-0"> {{group.description}} </p>
   </header>
+
+{{#ifEquals user.role "teacher"}}
+
+<div class="mb-4">
+
+  <button
+    class="btn btn-outline-primary"
+    data-bs-toggle="modal"
+    data-bs-target="#editGroupModal"
+  >
+    <i class="bi bi-pencil-square me-1"></i>
+    Editar grupo
+  </button>
+
+</div>
+
+{{/ifEquals}}
+
+{{#ifEquals user.role "admin"}}
+
+<div class="mb-4">
+
+  <button
+    class="btn btn-outline-primary"
+    data-bs-toggle="modal"
+    data-bs-target="#editGroupModal"
+  >
+    <i class="bi bi-pencil-square me-1"></i>
+    Editar grupo
+  </button>
+
+</div>
+
+{{/ifEquals}}
 
   <!-- Estadísticas -->
   <section class="row g-4 mb-4" aria-label="Estadísticas del grupo">
@@ -92,7 +127,7 @@
       </div>
 
       <form
-        action="/groups/{{group.code}}/add-user"
+        action="/api/groups/{{group.code}}/add-user"
         method="POST"
       >
         <div class="modal-body">
@@ -138,14 +173,77 @@
 <div class="card-body" style="max-height: 300px; overflow-y: auto;">
       <ul class="list-group list-group-flush">
         {{#each group.members}}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>{{name}}</strong>
-              <span class="text-muted small">{{email}}</span>
-            </div>
-            <span class="badge bg-primary">{{progress}}%</span>
-          </li>
-        {{/each}}
+
+<li class="list-group-item d-flex justify-content-between align-items-center">
+
+  <div>
+    <strong>{{name}}</strong>
+    <br>
+    <span class="text-muted small">
+      {{email}}
+    </span>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+
+    <span class="badge bg-primary">
+      {{role}}
+    </span>
+
+    {{#ifEquals ../user.role "teacher"}}
+
+    <form
+      action="/api/groups/{{../group.code}}/members/remove"
+      method="POST"
+      onsubmit="return confirm('¿Eliminar usuario del grupo?')"
+    >
+
+      <input
+        type="hidden"
+        name="user_id"
+        value="{{id}}"
+      >
+
+      <button
+        type="submit"
+        class="btn btn-sm btn-outline-danger"
+      >
+        <i class="bi bi-trash"></i>
+      </button>
+
+    </form>
+
+    {{/ifEquals}}
+
+    {{#ifEquals ../user.role "admin"}}
+
+    <form
+      action="/api/groups/{{../group.code}}/members/remove"
+      method="POST"
+      onsubmit="return confirm('¿Eliminar usuario del grupo?')"
+    >
+
+      <input
+        type="hidden"
+        name="user_id"
+        value="{{id}}"
+      >
+
+      <button
+        type="submit"
+        class="btn btn-sm btn-outline-danger"
+      >
+        <i class="bi bi-trash"></i>
+      </button>
+
+    </form>
+
+    {{/ifEquals}}
+
+  </div>
+
+</li>
+	{{/each}}
       </ul>
     </div>
   </section>
@@ -157,16 +255,138 @@
     </div>
     <div class="card-body">
       <ul class="list-group list-group-flush">
-        {{#each group.quizzes}}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>{{title}}</strong>
-              <span class="text-muted small">Respuestas: {{responses}}</span>
-            </div>
-            <span class="badge bg-success">{{average}}%</span>
-          </li>
-        {{/each}}
+      
+{{#each group.quizzes}}
+
+<li class="list-group-item">
+
+  <div class="d-flex justify-content-between align-items-start">
+
+    <div>
+
+      <strong>{{title}}</strong>
+
+      <div class="text-muted small mt-1">
+
+        Respuestas:
+        {{responses}}
+
+        ·
+
+        Estado:
+        {{status}}
+
+      </div>
+
+    </div>
+
+    <div class="text-end">
+
+      <span class="badge bg-success">
+        {{average}}%
+      </span>
+
+    </div>
+
+  </div>
+
+</li>
+
+{{/each}}
+
       </ul>
     </div>
   </section>
+
+<div
+  class="modal fade"
+  id="editGroupModal"
+  tabindex="-1"
+>
+
+  <div class="modal-dialog">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h5 class="modal-title">
+          Editar grupo
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+
+      </div>
+
+      <form
+        action="/api/groups/{{group.code}}/update"
+        method="POST"
+      >
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Nombre
+            </label>
+
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              value="{{group.name}}"
+              required
+            >
+
+          </div>
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Descripción
+            </label>
+
+            <textarea
+              name="description"
+              class="form-control"
+              rows="4"
+            >{{group.description}}</textarea>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 </main>

@@ -1,4 +1,4 @@
-const { getDB } = require('../controllers/db');
+const { getDB } = require('../db');
 
 function createUser({name, email, password, role = 'student' }) {
   const db = getDB();

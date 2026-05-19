@@ -22,8 +22,8 @@
                     <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
                 </button>
 
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
+		<ul class="dropdown-menu dropdown-menu-end">
+		    <li>
                         <a
                             class="dropdown-item"
                             href="/groups/{{code}}"
@@ -32,6 +32,7 @@
                         </a>
                     </li>
 
+		   {{#if (or (eq @root.user.role 'teacher') (eq @root.user.role 'admin'))}} 
                     <li>
                         <a
                             class="dropdown-item"
@@ -39,7 +40,20 @@
                         >
                             Editar grupo
                         </a>
-                    </li>
+		    </li>
+
+		    <li>
+<button
+    type="button"
+    class="dropdown-item text-danger"
+    onclick="deleteGroup('{{code}}')"
+>
+    Borrar grupo
+</button>
+		    </li>
+	            {{/if}}
+
+
                 </ul>
             </div>
         </div>
@@ -70,4 +84,48 @@
             </p>
         </div>
     </div>
+
+<script>
+async function deleteGroup(code) {
+
+    const ok = confirm(
+        '¿Seguro que deseas borrar este grupo?'
+    );
+
+    if (!ok) {
+        return;
+    }
+
+    try {
+
+        const res = await fetch(
+            `/api/groups/${code}`,
+            {
+                method: 'DELETE'
+            }
+        );
+
+        if (res.ok) {
+
+            window.location.href =
+                '/groups';
+
+            return;
+        }
+
+        alert(
+            'No se pudo borrar el grupo'
+        );
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            'Error eliminando grupo'
+        );
+    }
+}
+</script>
+
 </article>

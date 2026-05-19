@@ -37,30 +37,39 @@
       </span>
     </div>
 
-    <div class="d-flex gap-2 mt-auto">
-      <form
-        action="/teacher/templates/{{id}}/use"
-        method="POST"
-        class="flex-grow-1"
-      >
-        <button
-          type="submit"
-          class="btn text-white w-100"
-          style="background-color: var(--color-primary);"
-          aria-label="Usar plantilla {{title}}"
-        >
-          <i class="bi bi-copy me-1" aria-hidden="true"></i>
-          Usar plantilla
-        </button>
-      </form>
+<div class="d-flex gap-2 mt-auto">
 
-      <a
-        href="/teacher/templates/{{id}}"
-        class="btn btn-outline-secondary"
-        aria-label="Ver detalles de {{title}}"
-      >
-        <i class="bi bi-eye" aria-hidden="true"></i>
-      </a>
-    </div>
+  <form
+    action="/api/templates/{{id}}/use"
+    method="POST"
+    class="flex-grow-1"
+  >
+    <button
+      type="submit"
+      class="btn text-white w-100"
+      style="background-color: var(--color-primary);"
+    >
+      <i class="bi bi-copy me-1"></i>
+      Usar plantilla
+    </button>
+  </form>
+
+  <a
+    href="/teacher/templates/edit/{{id}}"
+    class="btn btn-outline-primary"
+  >
+    <i class="bi bi-pencil"></i>
+  </a>
+
+  <button
+    type="button"
+    class="btn btn-outline-danger delete-template-btn"
+    data-id="{{id}}"
+  >
+    <i class="bi bi-trash"></i>
+  </button>
+
+</div>
+
   </div>
 </article>

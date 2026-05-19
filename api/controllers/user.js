@@ -76,6 +76,48 @@ class UserController {
     }
   }
 
+  static async updateMe(req, res) {
+    try {
+      if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+      const id = req.user.id;
+
+      const name = String(req.body.fullName || req.body.name || '').trim();
+      const email = String(req.body.email || '').trim();
+      const bio = String(req.body.bio || '').trim();
+
+      const currentPassword = req.body.currentPassword || '';
+      const newPassword = req.body.newPassword || '';
+      const confirmPassword = req.body.confirmPassword || '';
+
+      if (!name) return res.status(400).json({ error: 'Invalid name' });
+      if (!email) return res.status(400).json({ error: 'Invalid email' });
+
+      const existing = getUserByEmail(email);
+      if (existing && existing.id !== id) return res.status(400).json({ error: 'Email already in use' });
+
+      let hashed = null;
+
+      if (newPassword || confirmPassword || currentPassword) {
+        if (!currentPassword) return res.status(400).json({ error: 'Current password required' });
+        if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        if (newPassword !== confirmPassword) return res.status(400).json({ error: 'Passwords do not match' });
+
+        const dbUser = getUserById(id);
+        if (!dbUser) return res.status(404).json({ error: 'User not found' });
+
+        const ok = await bcrypt.compare(currentPassword, dbUser.password);
+        if (!ok) return res.status(400).json({ error: 'Current password incorrect' });
+
+        hashed = await bcrypt.hash(newPassword, 10);
+      }
+
+      const changes = updateUser(id, { name, email, bio, password: hashed });
+      res.json({ updated: changes });
+    } catch (err) {
+      handleError(err, res);
+    }
+  }
+
   static async delete(req, res) {
     try {
       const id = Number(req.params.id);
