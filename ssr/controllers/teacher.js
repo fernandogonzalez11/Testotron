@@ -1,7 +1,8 @@
 const { getDB } = require('../../api/db');
 const { listGroups } = require('../../api/models/group');
 const { listTeacherResults } = require('../../api/models/attempt-answer');
-
+const { getTest } = require('../../api/models/test');
+const { getTemplate } =  require('../../api/models/template');
 
 function teacherQuizzesPage(req, res, baseContext) {
 
@@ -436,10 +437,317 @@ function quizzesResultsPage(req, res, baseContext) {
     );
 }
 
+function editQuizPage(
+  req,
+  res,
+  baseContext
+) {
+
+  /*
+  =====================================
+  AUTH
+  =====================================
+  */
+
+  if (!req.user) {
+
+    return res.redirect(
+      '/auth/login'
+    );
+  }
+
+  /*
+  =====================================
+  QUIZ
+  =====================================
+  */
+
+  const rawQuiz =
+    getTest(req.params.code);
+
+  if (!rawQuiz) {
+
+    return res.redirect(
+      '/teacher/quizzes'
+    );
+  }
+
+  /*
+  =====================================
+  OWNERSHIP
+  =====================================
+  */
+
+  if (
+
+    req.user.role !== 'admin' &&
+
+    rawQuiz.owner_id !== req.user.id
+
+  ) {
+
+    return res.redirect(
+      '/teacher/quizzes'
+    );
+  }
+
+  /*
+  =====================================
+  GROUPS
+  =====================================
+  */
+
+  const groups =
+
+    req.user.role === 'teacher'
+
+      ? listGroups({
+
+          owner_id:
+            req.user.id
+
+        })
+
+      : listGroups();
+
+  /*
+  =====================================
+  NORMALIZE QUIZ
+  =====================================
+  */
+
+  const quiz = {
+
+    code:
+      rawQuiz.code,
+
+    id:
+      rawQuiz.id,
+
+    /*
+    ===================================
+    BASIC
+    ===================================
+    */
+
+    name:
+      rawQuiz.title || '',
+
+    title:
+      rawQuiz.title || '',
+
+    description:
+      rawQuiz.description || '',
+
+    instructions:
+      rawQuiz.instructions || '',
+
+    category:
+      rawQuiz.category || '',
+
+    /*
+    ===================================
+    SETTINGS
+    ===================================
+    */
+
+    status:
+      rawQuiz.status || 'draft',
+
+    group_code:
+      rawQuiz.group_code || '',
+
+    timeLimit:
+      rawQuiz.time_limit_minutes || 0,
+
+    minScore:
+      rawQuiz.min_score || 0,
+
+    showAnswers:
+      Boolean(
+        rawQuiz.show_answers
+      ),
+
+    allowRetries:
+      Boolean(
+        rawQuiz.allow_retries
+      ),
+
+    shuffleQuestions:
+      Boolean(
+        rawQuiz.shuffle_questions
+      ),
+
+    shuffleAnswers:
+      Boolean(
+        rawQuiz.shuffle_answers
+      ),
+
+    /*
+    ===================================
+    QUESTIONS
+    ===================================
+    */
+
+    questions:
+      Array.isArray(
+        rawQuiz.questions
+      )
+
+      ? rawQuiz.questions.map(q => ({
+
+          question_id:
+            q.original_question_id,
+
+          question:
+            q.question,
+
+          type:
+            q.type,
+
+          metadata:
+            q.metadata,
+
+          correct_answer:
+            q.correct_answer,
+
+          pts:
+            q.pts || 1
+
+      }))
+
+      : []
+
+  };
+
+  /*
+  =====================================
+  PAGE
+  =====================================
+  */
+
+  const ctx = baseContext(req, {
+
+    pageTitle:
+      'Editar cuestionario',
+
+    pageDescription:
+      'Modifica la configuración y preguntas del cuestionario',
+
+    active: {
+      quizzes: true
+    },
+
+    locals: {
+
+      quiz,
+
+      groups,
+
+      mode: 'test',
+
+      difficulties: [
+
+        'Fácil',
+
+        'Media',
+
+        'Difícil'
+
+      ]
+    }
+
+  });
+
+  return res.render(
+
+    'teacher/create_quiz',
+
+    ctx
+
+  );
+
+}
+
+function editTemplatePage(
+  req,
+  res,
+  baseContext
+) {
+
+  if (!req.user) {
+    return res.redirect('/auth/login');
+  }
+
+  const template =
+    getTemplate(req.params.id);
+
+  if (!template) {
+    return res.redirect('/teacher/templates');
+  }
+
+  const ctx = baseContext(req, {
+
+    pageTitle:
+      'Editar plantilla',
+
+    active: {
+      templates: true
+    },
+
+    locals: {
+      template
+    }
+  });
+
+  return res.render(
+    'teacher/create_template',
+    ctx
+  );
+}
+
+function viewQuizPage(
+  req,
+  res,
+  baseContext
+) {
+
+  const quiz =
+    getTest(req.params.code);
+
+  if (!quiz) {
+    return res.redirect(
+      '/teacher/quizzes'
+    );
+  }
+
+  const ctx = baseContext(req, {
+
+    pageTitle:
+      quiz.title,
+
+    active: {
+      quizzes: true
+    },
+
+    locals: {
+      quiz
+    }
+  });
+
+  return res.render(
+    'teacher/view_quiz',
+    ctx
+  );
+}
+
 module.exports = {
+viewQuizPage,
+  editQuizPage,
   teacherQuizzesPage,
   questionsPage,
   templatesPage,
   createQuizPage,
-  quizzesResultsPage
+  quizzesResultsPage,
+  editTemplatePage
 };

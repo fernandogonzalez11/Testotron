@@ -17,7 +17,7 @@
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
     
     /* Sidebar Width - Percentage based, responsive to any screen */
-    --sidebar-width: 25%;
+    --sidebar-width: 14%;
 }
 
 /* Configuración Base */
@@ -65,10 +65,15 @@ span::first-letter {
 
 /* Asegura que el sidebar ocupe el alto disponible para empujar el contenido al fondo */
 .sidebar-wrapper {
-    min-height: calc(100vh - 70px); /* Ajusta según el alto de tu navbar */
-    max-height: calc(100vh - 70px);
-    overflow-y: auto;
     width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    flex-shrink: 0;
+}
+
+.actions-column {
+    width: 280px;
+    min-width: 280px;
+    white-space: nowrap;
 }
 
 #main-content {

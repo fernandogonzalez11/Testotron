@@ -23,6 +23,12 @@ module.exports = function(baseContext) {
       controller.templatesPage(req, res, baseContext)
   );
 
+router.get(
+  '/templates/edit/:id',
+  (req, res) =>
+    controller.editTemplatePage(req, res, baseContext)
+);
+
   router.get(
     '/quizzes/create',
     (req, res) =>
@@ -34,6 +40,18 @@ module.exports = function(baseContext) {
     (req, res) =>
       controller.quizzesResultsPage(req, res, baseContext)
   );
+
+router.get(
+  '/quizzes/edit/:code',
+  (req, res) =>
+    controller.editQuizPage(req, res, baseContext)
+);
+
+router.get(
+  '/quizzes/view/:code',
+  (req, res) =>
+    controller.viewQuizPage(req, res, baseContext)
+);
 
   return router;
 };

@@ -35,6 +35,7 @@ app.engine('.hbs', engine({
     helpers: {
         eq: (a, b) => a === b,
         or: function () { return Array.from(arguments).slice(0, -1).some(Boolean);},
+	json: (context) =>  JSON.stringify(context),
         ifEquals: function (arg1, arg2, options) { return (arg1 === arg2) ? options.fn(this) : options.inverse(this); }
     }
 }));

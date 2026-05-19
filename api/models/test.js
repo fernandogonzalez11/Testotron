@@ -6,25 +6,11 @@ function genCode() {
   return Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
-function createTest({
-  code,
-  title,
-  owner_id,
-  group_code = null,
-  template_id = null,
-  description = '',
-  instructions = '',
-  status = 'draft',
-  time_limit_minutes = null,
-  published_at = null,
-  due_at = null
-}) {
+function createTest(data) {
 
-  const db = getDB();
+const db = getDB();
 
-  const c = code || genCode();
-
-  db.prepare(`
+  const stmt = db.prepare(`
     INSERT INTO tests (
       code,
       template_id,
@@ -34,90 +20,149 @@ function createTest({
       description,
       instructions,
       status,
+      category,
       time_limit_minutes,
-      published_at,
-      due_at
+      min_score,
+      show_answers,
+      allow_retries,
+      settings,
+      shuffle_questions,
+      shuffle_answers
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    c,
-    template_id,
-    owner_id,
-    group_code,
-    title,
-    description,
-    instructions,
-    status,
-    time_limit_minutes,
-    published_at,
-    due_at
-  );
+    VALUES (
+      @code,
+      @template_id,
+      @owner_id,
+      @group_code,
+      @title,
+      @description,
+      @instructions,
+      @status,
+      @category,
+      @time_limit_minutes,
+      @min_score,
+      @show_answers,
+      @allow_retries,
+      @settings,
+      @shuffle_questions,
+      @shuffle_answers
+    )
+  `);
 
-  return getTest(c);
+  stmt.run(data);
+
+  return data;
+}
+
+function addTestQuestion(data) {
+
+const db = getDB();
+
+  const stmt = db.prepare(`
+    INSERT INTO test_questions (
+      test_code,
+      original_question_id,
+      section_title,
+      position,
+      question,
+      type,
+      metadata,
+      correct_answer,
+      pts
+    )
+    VALUES (
+      @test_code,
+      @original_question_id,
+      @section_title,
+      @position,
+      @question,
+      @type,
+      @metadata,
+      @correct_answer,
+      @pts
+    )
+  `);
+
+  stmt.run(data);
 }
 
 function getTest(code) {
 
-  const db = getDB();
+const db = getDB();
 
-  return db.prepare(`
-    SELECT
-      t.code,
-      t.template_id,
-      t.owner_id,
-      t.group_code,
-      t.title,
-      t.description,
-      t.instructions,
-      t.status,
-      t.time_limit_minutes,
-      t.published_at,
-      t.due_at,
-      t.created_at,
-      t.updated_at,
-      g.name AS group_name
-    FROM tests t
-    LEFT JOIN groups g
-      ON g.code = t.group_code
-    WHERE t.code = ?
-  `).get(code);
+  const test =
+    db.prepare(`
+      SELECT *
+      FROM tests
+      WHERE code = ?
+    `)
+    .get(code);
+
+  if (!test) {
+    return null;
+  }
+
+  const questions =
+    db.prepare(`
+      SELECT *
+      FROM test_questions
+      WHERE test_code = ?
+      ORDER BY position ASC
+    `)
+    .all(code);
+
+  return {
+    ...test,
+    questions: questions.map(q => ({
+      ...q,
+      metadata: safeJson(q.metadata),
+      correct_answer: safeJson(q.correct_answer)
+    }))
+  };
 }
+
 
 function updateTest(code, data) {
 
-  const db = getDB();
+const db = getDB();
 
-  return db.prepare(`
+  db.prepare(`
     UPDATE tests
     SET
-      title = COALESCE(?, title),
-      description = COALESCE(?, description),
-      instructions = COALESCE(?, instructions),
-      group_code = COALESCE(?, group_code),
-      template_id = COALESCE(?, template_id),
-      status = COALESCE(?, status),
-      time_limit_minutes = COALESCE(?, time_limit_minutes),
-      published_at = COALESCE(?, published_at),
-      due_at = COALESCE(?, due_at),
+      group_code = @group_code,
+      title = @title,
+      description = @description,
+      instructions = @instructions,
+      status = @status,
+      category = @category,
+      time_limit_minutes = @time_limit_minutes,
+      min_score = @min_score,
+      show_answers = @show_answers,
+      allow_retries = @allow_retries,
+      settings = @settings,
+      shuffle_questions = @shuffle_questions,
+      shuffle_answers = @shuffle_answers,
       updated_at = datetime('now')
-    WHERE code = ?
-  `).run(
-    data.title,
-    data.description,
-    data.instructions,
-    data.group_code,
-    data.template_id,
-    data.status,
-    data.time_limit_minutes,
-    data.published_at,
-    data.due_at,
+    WHERE code = @code
+  `).run({
+    ...data,
     code
-  ).changes;
+  });
+}
+
+function clearTestQuestions(code) {
+
+const db = getDB();
+
+  db.prepare(`
+    DELETE FROM test_questions
+    WHERE test_code = ?
+  `).run(code);
 }
 
 function deleteTest(code) {
 
-  const db = getDB();
+const db = getDB();
 
   return db.prepare(`
     DELETE FROM tests
@@ -132,7 +177,7 @@ function listTests({
   status
 } = {}) {
 
-  const db = getDB();
+const db = getDB();
 
   let q = `
     SELECT
@@ -149,7 +194,9 @@ function listTests({
       t.due_at,
       t.created_at,
       t.updated_at,
-      g.name AS group_name
+      g.name AS group_name,
+      t.shuffle_questions,
+      t.shuffle_answers
     FROM tests t
     LEFT JOIN groups g
       ON g.code = t.group_code
@@ -183,10 +230,23 @@ function listTests({
   return db.prepare(q).all(...params);
 }
 
+function safeJson(value) {
+
+const db = getDB();
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
 module.exports = {
   createTest,
   getTest,
   updateTest,
   deleteTest,
-  listTests
+  listTests,
+  addTestQuestion,
+  clearTestQuestions
 };

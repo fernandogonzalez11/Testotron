@@ -17,9 +17,26 @@ function getGroup(code) {
   return db.prepare('SELECT code, name, owner_id, created_at, updated_at FROM groups WHERE code = ?').get(code);
 }
 
-function updateGroup(code, { name }) {
+function updateGroup(code, {
+  name,
+  description
+}) {
+
   const db = getDB();
-  const info = db.prepare('UPDATE groups SET name = COALESCE(?, name), updated_at = datetime(\'now\') WHERE code = ?').run(name, code);
+
+  const info = db.prepare(`
+    UPDATE groups
+    SET
+      name = COALESCE(@name, name),
+      description = COALESCE(@description, description),
+      updated_at = datetime('now')
+    WHERE code = @code
+  `).run({
+    code,
+    name,
+    description
+  });
+
   return info.changes;
 }
 
@@ -114,38 +131,78 @@ function groupDetail(code) {
     WHERE code = ?
   `).get(code);
 
-  if (!g) return null;
+  if (!g) {
+    return null;
+  }
+
+  /*
+  =====================================
+  MEMBERS
+  =====================================
+  */
 
   const members = listMembers(code);
 
+  /*
+  =====================================
+  QUIZZES + STATS
+  =====================================
+  */
+
   const quizzes = db.prepare(`
-    SELECT *
-    FROM tests
-    WHERE group_code = ?
-    ORDER BY created_at DESC
+    SELECT
+      t.*,
+
+      COUNT(a.id) AS responses,
+
+      ROUND(AVG(a.score), 2) AS average
+
+    FROM tests t
+
+    LEFT JOIN attempts a
+      ON a.test_code = t.code
+
+    WHERE t.group_code = ?
+
+    GROUP BY t.code
+
+    ORDER BY t.created_at DESC
   `).all(code);
 
   /*
   =====================================
-  GROUP AVERAGE SCORE
+  GROUP AVG SCORE
   =====================================
-
-  attempts.score already exists.
-  Use it directly.
   */
 
   const avg = db.prepare(`
-    SELECT AVG(score) as avg_score
+    SELECT
+      ROUND(AVG(a.score), 2) AS avg_score
+
     FROM attempts a
+
     JOIN tests t
       ON t.code = a.test_code
+
     WHERE t.group_code = ?
       AND a.status IN ('submitted', 'graded')
   `).get(code);
 
+  /*
+  =====================================
+  ENRICH DATA
+  =====================================
+  */
+
   g.members = members;
+
   g.quizzes = quizzes;
-  g.avg_score = avg?.avg_score || 0;
+
+  g.membersCount = members.length;
+
+  g.quizzesCount = quizzes.length;
+
+  g.averageScore = avg?.avg_score || 0;
 
   return g;
 }

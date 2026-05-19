@@ -390,8 +390,16 @@ document.addEventListener('DOMContentLoaded', () => {
       editingQuestionId = null;
 
       form.reset();
+	
+      typeSelect.value =  'multiple_choice';
 
       renderFields(typeSelect.value);
+
+
+      document.getElementById(
+  'saveToBank'
+).checked = true;
+
 
       document.getElementById(
         'questionModalLabel'
@@ -524,12 +532,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           );
 
-        if (res.ok) {
+if (res.ok) {
 
-          window.location.reload();
+document.dispatchEvent(
+  new CustomEvent(
+    'question:deleted',
+    {
+      detail: { id }
+    }
+  )
+);
 
-          return;
-        }
+  return;
+}
 
         alert(
           'No se pudo eliminar la pregunta'
@@ -567,6 +582,13 @@ document.addEventListener('DOMContentLoaded', () => {
           ).value.trim(),
 
         type,
+	
+	source_type:
+    document.getElementById(
+      'saveToBank'
+    ).checked
+      ? 'bank'
+      : 'quiz',
 
         category:
           document.getElementById(
@@ -763,7 +785,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (res.ok) {
 
-          window.location.reload();
+const savedQuestion = await res.json();
+
+console.log(savedQuestion);
+
+document.dispatchEvent(
+  new CustomEvent(
+    'question:saved',
+    {
+      detail: {
+        question_id:
+          savedQuestion.question.id,
+
+        question:
+          savedQuestion.question.question,
+
+        type:
+          savedQuestion.question.type,
+
+        metadata:
+          savedQuestion.question.metadata,
+
+        correct_answer:
+          savedQuestion.question.correct_answer,
+
+        category:
+          savedQuestion.question.category,
+
+	difficulty:
+	  savedQuestion.question.difficulty,
+
+        pts: 1
+      }
+    }
+  )
+);
+
+const modalEl =
+  document.getElementById(
+    'questionModal'
+  );
+
+bootstrap.Modal
+  .getOrCreateInstance(
+    modalEl
+  )
+  .hide();
+
+  form.reset();
+
+  editingQuestionId = null;
+
+renderFields(
+    'multiple_choice'
+  );
 
           return;
         }

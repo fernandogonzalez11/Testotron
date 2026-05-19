@@ -1,246 +1,442 @@
+document.addEventListener('DOMContentLoaded', () => {
+
+  const questionsContainer =
+    document.getElementById(
+      'section-preguntas'
+    );
+
+  const questionBankList =
+    document.getElementById(
+      'questionBankList'
+    );
+
+const editData =
+  window.quizEditData || {};
+
+const isEdit =
+  editData.isEdit || false;
+
+const editMode =
+  editData.mode || 'test';
+
+let selectedQuestions =
+  Array.isArray(editData.questions)
+    ? editData.questions
+    : [];  
 /*
-document.addEventListener('DOMContentLoaded', () => {
-  const questionsList = document.querySelector('#main-content .card[aria-label="Preguntas"] ul.list-group');
-  const addQuestionBtn = document.querySelector('[data-bs-target="#questionModal"]');
-  let questions = []; // estado local de preguntas
+  =========================================
+  RENDER QUESTIONS
+  =========================================
+  */
 
-  // Función para renderizar la lista
   function renderQuestions() {
-    if (!questionsList) return;
-    questionsList.innerHTML = '';
 
-    if (questions.length === 0) {
-      const empty = document.createElement('p');
-      empty.className = 'text-muted';
-      empty.textContent = 'No hay preguntas añadidas aún.';
-      questionsList.parentNode.replaceChild(empty, questionsList);
+    if (selectedQuestions.length === 0) {
+
+      questionsContainer.innerHTML = `
+        <p class="text-muted">
+          No hay preguntas añadidas aún.
+        </p>
+      `;
+
       return;
     }
 
-    questions.forEach((q, index) => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    questionsContainer.innerHTML = `
+      <ul class="list-group">
+        ${selectedQuestions.map((q, index) => `
+          <li class="list-group-item">
 
-      const info = document.createElement('div');
-      info.innerHTML = `<strong>${q.text}</strong> <span class="text-muted small">(${q.type})</span>`;
+            <div class="d-flex justify-content-between">
 
-      const btnGroup = document.createElement('div');
-      btnGroup.className = 'btn-group';
+              <div>
 
-      // Botón subir
-      const upBtn = document.createElement('button');
-      upBtn.type = 'button';
-      upBtn.className = 'btn btn-sm btn-outline-secondary';
-      upBtn.setAttribute('aria-label', 'Mover arriba');
-      upBtn.innerHTML = '<i class="bi bi-arrow-up"></i>';
-      upBtn.addEventListener('click', () => {
-        if (index > 0) {
-          [questions[index - 1], questions[index]] = [questions[index], questions[index - 1]];
+                <strong>
+                  ${q.question}
+                </strong>
+
+                <div class="small text-muted">
+
+                  ${q.type}
+
+                  ·
+
+                  ${q.category || 'Sin categoría'}
+
+                </div>
+
+              </div>
+
+              <div class="d-flex gap-2">
+
+                <input
+                  type="number"
+                  min="1"
+                  value="${q.pts || 1}"
+                  class="form-control form-control-sm question-points"
+                  data-index="${index}"
+                  style="width:80px"
+                >
+
+                <button
+                  class="btn btn-sm btn-outline-danger remove-question"
+                  data-index="${index}"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    /*
+    =====================================
+    REMOVE
+    =====================================
+    */
+
+    document
+      .querySelectorAll('.remove-question')
+      .forEach(btn => {
+
+        btn.addEventListener('click', () => {
+
+          const index =
+            Number(btn.dataset.index);
+
+          selectedQuestions.splice(
+            index,
+            1
+          );
+
           renderQuestions();
-        }
+        });
+
       });
 
-      // Botón bajar
-      const downBtn = document.createElement('button');
-      downBtn.type = 'button';
-      downBtn.className = 'btn btn-sm btn-outline-secondary';
-      downBtn.setAttribute('aria-label', 'Mover abajo');
-      downBtn.innerHTML = '<i class="bi bi-arrow-down"></i>';
-      downBtn.addEventListener('click', () => {
-        if (index < questions.length - 1) {
-          [questions[index + 1], questions[index]] = [questions[index], questions[index + 1]];
-          renderQuestions();
-        }
-      });
+    /*
+    =====================================
+    POINTS
+    =====================================
+    */
 
-      // Botón eliminar
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'btn btn-sm btn-outline-danger';
-      delBtn.setAttribute('aria-label', 'Eliminar pregunta');
-      delBtn.innerHTML = '<i class="bi bi-trash"></i>';
-      delBtn.addEventListener('click', () => {
-        questions.splice(index, 1);
-        renderQuestions();
-      });
+    document
+      .querySelectorAll('.question-points')
+      .forEach(input => {
 
-      btnGroup.append(upBtn, downBtn, delBtn);
-      li.append(info, btnGroup);
-      questionsList.appendChild(li);
-    });
+        input.addEventListener('change', () => {
+
+          const index =
+            Number(input.dataset.index);
+
+          selectedQuestions[index].pts =
+            Number(input.value);
+        });
+
+      });
   }
 
-  // Simulación: añadir pregunta desde modal
-  const questionModal = document.getElementById('questionModal');
-  if (questionModal) {
-    const form = questionModal.querySelector('form');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const text = form.querySelector('#questionText').value.trim();
-      const type = form.querySelector('#questionType').value;
+  /*
+  =========================================
+  IMPORT QUESTIONS
+  =========================================
+  */
 
-      if (text) {
-        questions.push({ text, type });
-        renderQuestions();
-        // cerrar modal
-        const modal = bootstrap.Modal.getInstance(questionModal);
-        modal.hide();
-        form.reset();
-      }
-    });
+  async function loadQuestionBank() {
+
+    const res =
+      await fetch('/api/questions');
+
+    const data =
+      await res.json();
+
+    questionBankList.innerHTML =
+      data.questions.map(q => `
+
+        <div class="card mb-2">
+
+          <div class="card-body">
+
+            <div class="d-flex justify-content-between">
+
+              <div>
+
+                <strong>
+                  ${q.question}
+                </strong>
+
+                <div class="small text-muted">
+
+                  ${q.type}
+
+                </div>
+
+              </div>
+
+              <button
+                class="btn btn-sm btn-primary import-question"
+                data-id="${q.id}"
+              >
+                Importar
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `).join('');
+
+    document
+      .querySelectorAll('.import-question')
+      .forEach(btn => {
+
+        btn.addEventListener('click', async () => {
+
+          const id =
+            btn.dataset.id;
+
+          const res =
+            await fetch(
+              `/api/questions/${id}`
+            );
+
+          const data =
+            await res.json();
+
+          selectedQuestions.push({
+
+            question_id:
+              data.question.id,
+
+            question:
+              data.question.question,
+
+            type:
+              data.question.type,
+
+            metadata:
+              data.question.metadata,
+
+            correct_answer:
+              data.question.correct_answer,
+
+            category:
+              data.question.category,
+
+            pts: 1
+          });
+
+		  renderQuestions();
+       });
+
+      });
   }
 
-  // Inicializar lista vacía
-  renderQuestions();
-});
-document.addEventListener('DOMContentLoaded', () => {
-  const questionsList = document.querySelector('#main-content .card[aria-label="Preguntas"] ul.list-group');
-  const addQuestionBtn = document.querySelector('[data-bs-target="#questionModal"]');
-  let questions = []; // estado local de preguntas
+  loadQuestionBank();
 
-  // Función para renderizar la lista
-  function renderQuestions() {
-    if (!questionsList) return;
-    questionsList.innerHTML = '';
+  /*
+  =========================================
+  RECEIVE NEW QUESTION
+  =========================================
+  */
 
-    if (questions.length === 0) {
-      const empty = document.createElement('p');
-      empty.className = 'text-muted';
-      empty.textContent = 'No hay preguntas añadidas aún.';
-      questionsList.parentNode.replaceChild(empty, questionsList);
-      return;
+  document.addEventListener(
+    'question:saved',
+    (e) => {
+
+      selectedQuestions.push(
+        e.detail
+      );
+
+      renderQuestions();
     }
+  );
 
-    questions.forEach((q, index) => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+  /*
+  =========================================
+  SAVE QUIZ
+  =========================================
+  */
 
-      const info = document.createElement('div');
-      info.innerHTML = `<strong>${q.text}</strong> <span class="text-muted small">(${q.type})</span>`;
+  document
+    .getElementById('quizForm')
+    .addEventListener('submit', async (e) => {
 
-      const btnGroup = document.createElement('div');
-      btnGroup.className = 'btn-group';
-
-      // Botón subir
-      const upBtn = document.createElement('button');
-      upBtn.type = 'button';
-      upBtn.className = 'btn btn-sm btn-outline-secondary';
-      upBtn.setAttribute('aria-label', 'Mover arriba');
-      upBtn.innerHTML = '<i class="bi bi-arrow-up"></i>';
-      upBtn.addEventListener('click', () => {
-        if (index > 0) {
-          [questions[index - 1], questions[index]] = [questions[index], questions[index - 1]];
-          renderQuestions();
-        }
-      });
-
-      // Botón bajar
-      const downBtn = document.createElement('button');
-      downBtn.type = 'button';
-      downBtn.className = 'btn btn-sm btn-outline-secondary';
-      downBtn.setAttribute('aria-label', 'Mover abajo');
-      downBtn.innerHTML = '<i class="bi bi-arrow-down"></i>';
-      downBtn.addEventListener('click', () => {
-        if (index < questions.length - 1) {
-          [questions[index + 1], questions[index]] = [questions[index], questions[index + 1]];
-          renderQuestions();
-        }
-      });
-
-      // Botón eliminar
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'btn btn-sm btn-outline-danger';
-      delBtn.setAttribute('aria-label', 'Eliminar pregunta');
-      delBtn.innerHTML = '<i class="bi bi-trash"></i>';
-      delBtn.addEventListener('click', () => {
-        questions.splice(index, 1);
-        renderQuestions();
-      });
-
-      btnGroup.append(upBtn, downBtn, delBtn);
-      li.append(info, btnGroup);
-      questionsList.appendChild(li);
-    });
-  }
-
-  // Simulación: añadir pregunta desde modal
-  const questionModal = document.getElementById('questionModal');
-  if (questionModal) {
-    const form = questionModal.querySelector('form');
-    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const text = form.querySelector('#questionText').value.trim();
-      const type = form.querySelector('#questionType').value;
 
-      if (text) {
-        questions.push({ text, type });
-        renderQuestions();
-        // cerrar modal
-        const modal = bootstrap.Modal.getInstance(questionModal);
-        modal.hide();
-        form.reset();
-      }
-    });
-  }
+	
+const saveMode =
+  document.getElementById(
+    'saveMode'
+  ).value;
 
-  // Inicializar lista vacía
-  renderQuestions();
-});
+let url = '/api/tests';
+let method = 'POST';
+
+/*
+=====================================
+TEMPLATE
+=====================================
 */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const questionsList = document.getElementById('section-preguntas');
-  let questions = [];
+if (saveMode === 'template') {
 
-  function renderQuestions() {
-    questionsList.innerHTML = '';
-    if (questions.length === 0) {
-      const emptyLi = document.createElement('li');
-      emptyLi.className = 'list-group-item text-muted';
-      emptyLi.textContent = 'No hay preguntas añadidas aún.';
-      questionsList.appendChild(emptyLi);
-      return;
-    }
-    questions.forEach((q, index) => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `
-        <div><strong>${q.text}</strong> <span class="text-muted small">(${q.type})</span></div>
-        <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover arriba"><i class="bi bi-arrow-up"></i></button>
-          <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Mover abajo"><i class="bi bi-arrow-down"></i></button>
-          <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Eliminar pregunta"><i class="bi bi-trash"></i></button>
-        </div>
-      `;
-      // listeners mover/eliminar
-      const [upBtn, downBtn, delBtn] = li.querySelectorAll('button');
-      upBtn.addEventListener('click', () => {
-        if (index > 0) {
-          [questions[index - 1], questions[index]] = [questions[index], questions[index - 1]];
-          renderQuestions();
-        }
-      });
-      downBtn.addEventListener('click', () => {
-        if (index < questions.length - 1) {
-          [questions[index + 1], questions[index]] = [questions[index], questions[index + 1]];
-          renderQuestions();
-        }
-      });
-      delBtn.addEventListener('click', () => {
-        questions.splice(index, 1);
-        renderQuestions();
-      });
-      questionsList.appendChild(li);
+  url = '/api/templates';
+}
+
+/*
+=====================================
+EDIT TEST
+=====================================
+*/
+
+if (
+  isEdit &&
+  editMode === 'test'
+) {
+
+  url =
+    `/api/tests/${editData.code}`;
+
+  method = 'PATCH';
+}
+
+/*
+=====================================
+EDIT TEMPLATE
+=====================================
+*/
+
+if (
+  isEdit &&
+  editMode === 'template'
+) {
+
+  url =
+    `/api/templates/${editData.templateId}`;
+
+  method = 'PATCH';
+}
+
+      const payload = {
+
+        title:
+          document.getElementById(
+            'quizName'
+          ).value,
+
+        description:
+          document.getElementById(
+            'quizDescription'
+          ).value,
+
+        category:
+          document.getElementById(
+            'quizCategory'
+          ).value,
+
+        group_code:
+          document.getElementById(
+            'quizGroup'
+          ).value,
+
+        status:
+          document.getElementById(
+            'quizStatus'
+          ).value,
+
+time_limit_minutes:
+  document.getElementById(
+    'quizTime'
+  ).value
+    ? Number(document.getElementById('quizTime').value)
+    : null,
+
+min_score:
+  document.getElementById(
+    'quizScore'
+  ).value
+    ? Number(document.getElementById('quizScore').value)
+    : null,
+
+        show_answers:
+          document.getElementById(
+            'showAnswers'
+          ).checked,
+
+        allow_retries:
+          document.getElementById(
+            'allowRetries'
+          ).checked,
+
+shuffle_questions:
+  document.getElementById(
+    'shuffleQuestions'
+  ).checked,
+
+shuffle_answers:
+  document.getElementById(
+    'shuffleAnswers'
+  ).checked,
+
+        questions:
+          selectedQuestions
+      };
+
+      const res =
+        await fetch(
+          url,
+          {
+            method,
+
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify(payload)
+          }
+        );
+
+      const data =
+        await res.json();
+
+      if (!res.ok) {
+
+        alert(
+          data.error || 'Error'
+        );
+
+        return;
+      }
+
+/*
+=====================================
+REDIRECTS
+=====================================
+*/
+
+if (saveMode === 'template') {
+
+  window.location =
+    '/teacher/templates';
+
+  return;
+}
+
+window.location =
+  '/teacher/quizzes';
+
     });
-  }
-
-  // Escuchar evento del modal
-  document.addEventListener('question:add', (e) => {
-    questions.push({ text: e.detail.text, type: e.detail.type });
-    renderQuestions();
-  });
 
   renderQuestions();
-});
 
+});

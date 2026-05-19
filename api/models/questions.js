@@ -22,7 +22,8 @@ function createQuestion({
 
   category = '',
 
-  is_public = 0
+  is_public = 0,
+  source_type
 
 }) {
 
@@ -38,10 +39,10 @@ function createQuestion({
       correct_answer,
       difficulty,
       category,
-      is_public
-
+      is_public,
+      source_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
 
     owner_id,
@@ -58,7 +59,8 @@ function createQuestion({
 
     category,
 
-    is_public
+    is_public,
+    source_type
 
   );
 
@@ -192,8 +194,8 @@ function listQuestions(owner_id) {
     ? getDB()
         .prepare(`
           SELECT *
-          FROM questions
-          WHERE owner_id = ?
+	  FROM questions
+          WHERE source_type = 'bank' && owner_id = ?
           ORDER BY created_at DESC
         `)
         .all(owner_id)
@@ -201,7 +203,8 @@ function listQuestions(owner_id) {
     : getDB()
         .prepare(`
           SELECT *
-          FROM questions
+	  FROM questions
+          WHERE source_type = 'bank'
           ORDER BY created_at DESC
         `)
         .all();

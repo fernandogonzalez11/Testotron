@@ -12,7 +12,7 @@ router.get('/', requireRole('teacher','admin','student'), TestController.list);
 router.get('/:code/detail', requireRole('teacher','admin','student'), TestController.detail);
 router.get('/:code', requireRole('teacher','admin','student'), TestController.get);
 router.post('/:code/start', requireRole('student','teacher','admin'), AttemptController.start);
-router.put('/:code', requireRole('teacher','admin'), requireOwnership('test'), TestController.update);
+router.patch('/:code', requireRole('teacher','admin'), requireOwnership('test'), TestController.update);
 router.delete('/:code', requireRole('teacher','admin'), requireOwnership('test'), TestController.delete);
 
 // publish / close

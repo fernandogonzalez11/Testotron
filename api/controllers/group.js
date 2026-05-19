@@ -20,15 +20,30 @@ class GroupController {
     }
   }
 
-  static list(req, res) {
-    try {
-      const owner = req.query.owner_id ? Number(req.query.owner_id) : undefined;
-      const rows = listGroups({ owner_id: owner });
-      res.json({ groups: rows });
-    } catch (err) {
-      return handleError(err, res);
-    }
+static list(req, res) {
+
+  try {
+
+    const owner =
+      req.user.role === 'teacher'
+        ? req.user.id
+        : req.query.owner_id
+          ? Number(req.query.owner_id)
+          : undefined;
+
+    const rows = listGroups({
+      owner_id: owner
+    });
+
+    res.json({
+      groups: rows
+    });
+
+  } catch (err) {
+
+    return handleError(err, res);
   }
+}
 
   static get(req, res) {
     try {
@@ -232,21 +247,63 @@ static joinGroupByCode(req, res) {
       const code = req.params.code;
       const userId = Number(req.body.user_id || req.body.id);
       const changes = removeMember(code, userId);
-      res.json({ removed: !!changes });
+      
+if (
+  req.headers.accept?.includes('text/html')
+) {
+
+  return res.redirect(
+    `/groups/${code}?success=` +
+    encodeURIComponent(
+      'Usuario eliminado del grupo'
+    )
+  );
+}
+
+return res.json({
+  removed: !!changes
+});
+
     } catch (err) {
       return handleError(err, res);
     }
   }
 
-  static update(req, res) {
-    try {
-      const code = req.params.code;
-      const changes = updateGroup(code, { name: req.body.name });
-      res.json({ updated: changes });
-    } catch (err) {
-      return handleError(err, res);
+static update(req, res) {
+
+  try {
+
+    const code = req.params.code;
+
+    const changes = updateGroup(
+      code,
+      {
+        name: req.body.name,
+        description: req.body.description
+      }
+    );
+
+    if (
+      req.headers.accept?.includes('text/html')
+    ) {
+
+      return res.redirect(
+        `/groups/${code}?success=` +
+        encodeURIComponent(
+          'Grupo actualizado correctamente'
+        )
+      );
     }
+
+    return res.json({
+      updated: !!changes
+    });
+
+  } catch (err) {
+
+    return handleError(err, res);
   }
+}
 
   static delete(req, res) {
     try {

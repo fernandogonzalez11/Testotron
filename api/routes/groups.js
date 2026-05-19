@@ -62,13 +62,29 @@ router.delete(
 router.put(
     '/:code',
     requireRole('teacher', 'admin'),
+    requireOwnership('group'),
+    GroupController.update
+);
+
+router.post(
+    '/:code/update',
+    requireRole('teacher', 'admin'),
+    requireOwnership('group'),
     GroupController.update
 );
 
 router.delete(
     '/:code',
     requireRole('teacher', 'admin'),
+    requireOwnership('group'),
     GroupController.delete
+);
+
+router.post(
+    '/:code/members/remove',
+    requireRole('teacher', 'admin'),
+    requireOwnership('group'),
+    GroupController.removeMember
 );
 
 module.exports = router;

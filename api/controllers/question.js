@@ -36,7 +36,8 @@ class QuestionController {
         correct_answer,
         difficulty,
         category,
-        is_public
+        is_public,
+	source_type
       } = req.body;
 
       if (!question || !type) {
@@ -51,24 +52,51 @@ class QuestionController {
         correct_answer,
         difficulty,
         category,
-        is_public
+        is_public,
+	source_type: source_type || 'bank'
       });
 
-      return res.status(201).json({ success: true, id });
+const createdQuestion =
+  getQuestion(id);
+
+return res.status(200).json({
+  success: true,
+  question: createdQuestion
+});
+
     } catch (err) {
       return handleError(err, res);
     }
   }
 
-  static update(req, res) {
-    try {
-      const id = Number(req.params.id);
-      const changes = updateQuestion(id, req.body);
-      res.json({ updated: changes });
-    } catch (err) {
-      return handleError(err, res);
-    }
+static update(req, res) {
+
+  try {
+
+    const id =
+      Number(req.params.id);
+
+    updateQuestion(
+      id,
+      req.body
+    );
+
+    const updatedQuestion =
+      getQuestion(id);
+
+    return res.json({
+
+      success: true,
+
+      question:
+        updatedQuestion
+    });
+
+  } catch (err) {
+
+    return handleError(err, res);
   }
+}
 
   static delete(req, res) {
     try {
